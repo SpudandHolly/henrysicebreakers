@@ -1,0 +1,16 @@
+{
+  "name": "Henry's Icebreakers",
+  "short_name": "Icebreakers",
+  "description": "A companion to Be a Better Boss. Shake your phone for a would-you-rather leadership dilemma, colour-coded across five tiers. A gift for Henry, to share with his management team.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#14121b",
+  "theme_color": "#14121b",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

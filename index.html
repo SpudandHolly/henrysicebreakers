@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<meta name="theme-color" content="#14121b" />
+<title>Henry&#39;s Icebreakers &middot; a Be a Better Boss companion</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Henry&#39;s Icebreakers" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@500;700;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#14121b; --paper:#f5f3ee; --or:#14121b;
+    --a:#f59e0b; --b:#b45309; --shell:#14121b;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; }
+  body{
+    font-family:"Archivo", system-ui, sans-serif; background:var(--shell); color:var(--paper);
+    overflow:hidden; transition:background .5s ease;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  /* ---------- gate ---------- */
+  #gate{
+    position:fixed; inset:0; z-index:40; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:20px; text-align:center; padding:30px 28px;
+    background:radial-gradient(130% 120% at 50% -10%, #2a2436 0%, #14121b 62%); overflow-y:auto;
+  }
+  .eyebrow{ font-family:"Anton",sans-serif; letter-spacing:.24em; text-transform:uppercase; font-size:12px; color:#f59e0b; }
+  #gate .mark{ font-family:"Anton", sans-serif; text-transform:uppercase; line-height:.82; font-size:clamp(46px, 15vw, 104px); letter-spacing:.005em; }
+  #gate .mark .lo{ color:var(--paper); }
+  #gate .mark .hi{ background:linear-gradient(92deg,#f59e0b,#f43f5e 70%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  #gate p{ max-width:30ch; font-weight:500; opacity:.72; line-height:1.45; font-size:15px; }
+  .tiers{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; max-width:340px; }
+  .chip{ font-weight:700; font-size:12px; letter-spacing:.02em; padding:9px 14px; border-radius:100px; border:1.5px solid transparent; cursor:pointer; color:#fff; user-select:none; display:flex; align-items:center; gap:7px; transition:opacity .15s ease, filter .15s ease; }
+  .chip .swatch{ width:9px; height:9px; border-radius:50%; background:#fff; }
+  .chip[aria-pressed="false"]{ opacity:.32; filter:grayscale(.5); }
+  #start{ font-family:"Anton", sans-serif; text-transform:uppercase; letter-spacing:.05em; font-size:22px; color:var(--ink); background:#ffd23f; border:none; border-radius:100px; padding:19px 46px; cursor:pointer; box-shadow:0 9px 0 #b7952a; transition:transform .06s ease, box-shadow .06s ease; margin-top:2px; }
+  #start:active{ transform:translateY(6px); box-shadow:0 3px 0 #b7952a; }
+  .about-link{ background:none; border:none; color:var(--paper); opacity:.55; font-size:13px; font-weight:700; text-decoration:underline; text-underline-offset:3px; cursor:pointer; letter-spacing:.02em; }
+  .about-link:active{ opacity:1; }
+  #gate .hint{ font-size:11px; opacity:.45; letter-spacing:.07em; text-transform:uppercase; }
+
+  /* ---------- card ---------- */
+  #stage{ position:fixed; inset:0; display:flex; flex-direction:column; }
+  #infoBtn{ position:fixed; top:calc(env(safe-area-inset-top) + 14px); left:16px; z-index:25; width:34px; height:34px; border-radius:50%; border:1.5px solid rgba(255,255,255,.5); background:rgba(0,0,0,.22); color:#fff; font-family:"Anton",sans-serif; font-size:17px; cursor:pointer; backdrop-filter:blur(6px); }
+  .badge{ position:fixed; top:calc(env(safe-area-inset-top) + 14px); left:50%; transform:translateX(-50%); z-index:20; font-family:"Anton",sans-serif; text-transform:uppercase; letter-spacing:.13em; font-size:12px; padding:8px 16px; border-radius:100px; color:#fff; text-align:center; background:rgba(0,0,0,.28); backdrop-filter:blur(6px); max-width:66vw; }
+  .half{ flex:1; display:flex; align-items:center; justify-content:center; padding:11vh 24px; position:relative; }
+  .half.top{ background:var(--a); } .half.bottom{ background:var(--b); }
+  .half .opt{ font-family:"Archivo",sans-serif; font-weight:900; font-size:clamp(22px, 6.4vw, 42px); line-height:1.04; text-align:center; text-wrap:balance; max-width:15ch; text-shadow:0 2px 18px rgba(0,0,0,.22); }
+  .or-badge{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10; width:84px; height:84px; border-radius:50%; background:var(--paper); color:var(--or); display:flex; align-items:center; justify-content:center; font-family:"Anton",sans-serif; font-size:28px; box-shadow:0 12px 30px rgba(0,0,0,.35); }
+  .cue{ position:fixed; bottom:calc(env(safe-area-inset-bottom) + 18px); left:50%; transform:translateX(-50%); z-index:20; font-size:12px; letter-spacing:.11em; text-transform:uppercase; font-weight:700; opacity:.72; color:#fff; text-shadow:0 1px 6px rgba(0,0,0,.4); display:flex; align-items:center; gap:8px; }
+  .cue .dot{ width:7px; height:7px; border-radius:50%; background:#ffd23f; animation:pulse 1.4s infinite; }
+  @keyframes pulse{ 0%,100%{opacity:.3; transform:scale(.8)} 50%{opacity:1; transform:scale(1.15)} }
+  .top.enter{ animation:slideDown .42s cubic-bezier(.2,.9,.25,1.15) both; }
+  .bottom.enter{ animation:slideUp .42s cubic-bezier(.2,.9,.25,1.15) both; }
+  .or-badge.pop{ animation:pop .5s .18s cubic-bezier(.2,.9,.25,1.4) both; }
+  @keyframes slideDown{ from{transform:translateY(-100%)} to{transform:translateY(0)} }
+  @keyframes slideUp{ from{transform:translateY(100%)} to{transform:translateY(0)} }
+  @keyframes pop{ 0%{transform:translate(-50%,-50%) scale(0) rotate(-25deg)} 100%{transform:translate(-50%,-50%) scale(1) rotate(0)} }
+  @media (prefers-reduced-motion: reduce){ .top.enter,.bottom.enter,.or-badge.pop{ animation:none; } .cue .dot{ animation:none; } body{ transition:none; } }
+
+  /* ---------- about / gift panel ---------- */
+  #about{ position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; padding:26px; background:rgba(10,9,14,.74); backdrop-filter:blur(8px); }
+  #about .panel{ max-width:430px; background:#1c1926; border:1px solid rgba(255,255,255,.1); border-radius:22px; padding:30px 26px; text-align:center; max-height:88vh; overflow-y:auto; }
+  #about .gifttag{ font-family:"Anton",sans-serif; text-transform:uppercase; letter-spacing:.26em; font-size:12px; color:#ffd23f; margin-bottom:12px; }
+  #about h2{ font-family:"Anton",sans-serif; font-size:25px; text-transform:uppercase; line-height:.96; margin-bottom:14px; }
+  #about p{ font-weight:500; font-size:14px; line-height:1.55; opacity:.84; margin-bottom:11px; }
+  #about p em{ font-style:italic; opacity:1; }
+  #about .meta{ font-size:12px; opacity:.5; line-height:1.5; margin:16px 0 20px; }
+  #about .close{ font-family:"Anton",sans-serif; text-transform:uppercase; letter-spacing:.04em; font-size:16px; color:var(--ink); background:#ffd23f; border:none; border-radius:100px; padding:13px 34px; cursor:pointer; }
+
+  .hidden{ display:none !important; }
+</style>
+</head>
+<body>
+
+  <div id="gate">
+    <div class="eyebrow">A companion to Be a Better Boss</div>
+    <div class="mark"><span class="lo">Henry&#39;s</span><br><span class="hi">Icebreakers</span></div>
+    <p>Shake your phone for a question to spark a conversation with your team. 300 dilemmas across five tiers, from light and fun to genuinely high-stakes.</p>
+    <div class="tiers" id="tierPicker"></div>
+    <button id="start">Start shaking</button>
+    <button class="about-link" id="aboutOpen" type="button">About this gift</button>
+    <div class="hint" id="gateHint">Tap to allow motion access</div>
+  </div>
+
+  <div id="stage" class="hidden" aria-live="polite">
+    <button id="infoBtn" type="button" aria-label="About this gift">i</button>
+    <div class="badge" id="badge">Tier</div>
+    <section class="half top" id="topHalf"><div class="opt" id="optA">Option A</div></section>
+    <div class="or-badge" id="orBadge">OR</div>
+    <section class="half bottom" id="bottomHalf"><div class="opt" id="optB">Option B</div></section>
+    <div class="cue" id="cue"><span class="dot"></span><span id="cueText">Shake for the next one</span></div>
+  </div>
+
+  <div id="about" class="hidden">
+    <div class="panel" role="dialog" aria-modal="true" aria-label="About this gift">
+      <div class="gifttag">A gift for Henry</div>
+      <h2>Henry&#39;s Icebreakers</h2>
+      <p>A companion to <em>Be a Better Boss</em> by Henry Engelhardt, who built one of the best places to work anywhere by treating enjoying the work and winning at it as the same thing.</p>
+      <p>Shake for a would-you-rather dilemma, then talk it through with your management team. 300 questions across five tiers, from Friday-meeting trivia to the calls that quietly shape a culture. No right answers, just better conversations.</p>
+      <p class="meta">In the spirit of the book, whose profits support the Moondance Foundation.<br>Built with Cavefish.</p>
+      <button class="close" id="aboutClose" type="button">Got it</button>
+    </div>
+  </div>
+
+<script>
+/* =========================================================================
+   HENRY'S ICEBREAKERS  -  a companion to "Be a Better Boss"
+   Content is generated from the would-you-rather book. To edit: each
+   CATEGORY has a label and two shades (a = top of card, b = bottom).
+   Each QUESTION has a cat (matching a category key) plus options a and b.
+   ========================================================================= */
+const CATEGORIES = {
+  icebreakers: { label:'Fun & Icebreakers',      a:'#f59e0b', b:'#b45309' },
+  business:    { label:'Light Business Reality',  a:'#10b981', b:'#047857' },
+  leadership:  { label:'Leadership Trade-offs',   a:'#3b82f6', b:'#1d4ed8' },
+  executive:   { label:'Executive Judgement',     a:'#8b5cf6', b:'#6d28d9' },
+  highstakes:  { label:'High-Stakes Reflection',  a:'#f43f5e', b:'#9f1239' },
+};
+
+const QUESTIONS = [
+  { cat:'icebreakers', a:'Ban meetings on Fridays', b:'Emails after 6pm' },
+  { cat:'icebreakers', a:'Fix the Wi-Fi forever', b:'The printer forever' },
+  { cat:'icebreakers', a:'Be five minutes late to everything', b:'Painfully early to everything' },
+  { cat:'icebreakers', a:'Cancel a meeting everyone hates', b:'Attend it knowing nothing will change' },
+  { cat:'icebreakers', a:'Have a great title', b:'A great salary' },
+  { cat:'icebreakers', a:'Work from anywhere', b:'Be paid more to be in the office' },
+  { cat:'icebreakers', a:'Deal with a difficult client', b:'A difficult colleague' },
+  { cat:'icebreakers', a:'Send one email to everyone by mistake', b:'Forget to reply to the CEO' },
+  { cat:'icebreakers', a:'Be famous in your industry', b:'Anonymous but wealthy' },
+  { cat:'icebreakers', a:'Lead every meeting', b:'Never attend one again' },
+  { cat:'icebreakers', a:'Have an office with a great view', b:'One closer to the coffee machine' },
+  { cat:'icebreakers', a:'Answer the same question ten times', b:'Explain something once to ten people' },
+  { cat:'icebreakers', a:'Have lunch with someone brilliant and boring', b:'Entertaining and average' },
+  { cat:'icebreakers', a:'Always say what you think', b:'Always know what others are thinking' },
+  { cat:'icebreakers', a:'Work with someone faster than you', b:'Smarter than you' },
+  { cat:'icebreakers', a:'Have every project finish on time', b:'Under budget' },
+  { cat:'icebreakers', a:'Give presentations', b:'Write reports' },
+  { cat:'icebreakers', a:'Accidentally mute yourself', b:'Forget to mute yourself' },
+  { cat:'icebreakers', a:'Be overpaid in a boring job', b:'Underpaid in an exciting one' },
+  { cat:'icebreakers', a:'Have all responsibility without authority', b:'Authority without responsibility' },
+  { cat:'icebreakers', a:'Automate your most tedious task', b:'Delegate your most stressful one' },
+  { cat:'icebreakers', a:'Always know the meeting agenda', b:'Always have a good excuse to leave early' },
+  { cat:'icebreakers', a:'Manage up', b:'Manage down' },
+  { cat:'icebreakers', a:'Work on something urgent', b:'Something important' },
+  { cat:'icebreakers', a:'Have perfect memory', b:'Perfect foresight for one meeting' },
+  { cat:'icebreakers', a:'Be known for starting things', b:'Finishing them' },
+  { cat:'icebreakers', a:'Have a team that challenges you', b:'Supports you' },
+  { cat:'icebreakers', a:'Receive critical feedback publicly', b:'No feedback at all' },
+  { cat:'icebreakers', a:'Spend a day in strategy', b:'A day in operations' },
+  { cat:'icebreakers', a:'Prevent escalation', b:'Resolve it once it happens' },
+  { cat:'icebreakers', a:'Negotiate salary', b:'Job title' },
+  { cat:'icebreakers', a:'Work somewhere growing chaotically', b:'Declining gracefully' },
+  { cat:'icebreakers', a:'Have influence without authority', b:'Authority without influence' },
+  { cat:'icebreakers', a:'Hire for technical skill', b:'Cultural fit' },
+  { cat:'icebreakers', a:'Be valued for your ideas', b:'Your execution' },
+  { cat:'icebreakers', a:'Skip all small talk forever', b:'Never have a casual conversation again' },
+  { cat:'icebreakers', a:'Be in the room where it happens', b:'Free to focus on your work' },
+  { cat:'icebreakers', a:'Coach someone struggling to improve', b:'Manage someone who refuses to change' },
+  { cat:'icebreakers', a:'Give recognition publicly', b:'Reward privately' },
+  { cat:'icebreakers', a:'Coach quietly', b:'Celebrate visibly' },
+  { cat:'icebreakers', a:'Inherit a strong team with a weak strategy', b:'A strong strategy with a weak team' },
+  { cat:'icebreakers', a:'Solve the obvious problem', b:'The underlying cause' },
+  { cat:'icebreakers', a:'Have a difficult conversation now', b:'An impossible one later' },
+  { cat:'icebreakers', a:'Delegate authority', b:'Responsibility' },
+  { cat:'icebreakers', a:'Be consultative in decisions', b:'Directive' },
+  { cat:'icebreakers', a:'Standardise processes', b:'Trust individual judgement' },
+  { cat:'icebreakers', a:'Defend a decision you disagreed with', b:'Refuse to implement it' },
+  { cat:'icebreakers', a:'Be criticised for being too cautious', b:'Too aggressive' },
+  { cat:'icebreakers', a:'Work with someone brilliant and unreliable', b:'Competent and consistent' },
+  { cat:'icebreakers', a:'Set the direction', b:'Execute flawlessly' },
+  { cat:'icebreakers', a:'Build consensus before acting', b:'Take action and manage dissent' },
+  { cat:'icebreakers', a:'Promote someone ready', b:'Develop someone promising' },
+  { cat:'icebreakers', a:'Measure everything imperfectly', b:'Measure what matters precisely' },
+  { cat:'icebreakers', a:'Have full authority with high scrutiny', b:'Shared authority with less oversight' },
+  { cat:'icebreakers', a:'Make a reversible mistake quickly', b:'A permanent mistake slowly' },
+  { cat:'icebreakers', a:'Know someone is planning to leave', b:'Be surprised when they resign' },
+  { cat:'icebreakers', a:'Run toward a problem', b:'Delegate it strategically' },
+  { cat:'icebreakers', a:'Be efficient', b:'Effective when you cannot be both' },
+  { cat:'icebreakers', a:'Be respected for expertise', b:'For judgement' },
+  { cat:'icebreakers', a:'Focus on what you do best', b:'Improve what you do worst' },
+  { cat:'business', a:'Grow fast knowing things will break', b:'Grow slowly knowing competitors will pass you' },
+  { cat:'business', a:'Have clarity with disagreement', b:'Alignment with confusion' },
+  { cat:'business', a:'Fix culture before strategy', b:'Strategy before culture' },
+  { cat:'business', a:'Hire quickly and risk mistakes', b:'Hire slowly and miss opportunities' },
+  { cat:'business', a:'Under-promise internally', b:'Over-promise externally' },
+  { cat:'business', a:'Make decisions alone', b:'Own decisions made by committee' },
+  { cat:'business', a:'Invest in people who may leave', b:'Systems that may fail' },
+  { cat:'business', a:'Be respected by your team', b:'Trusted by your board' },
+  { cat:'business', a:'Have one big win', b:'Ten quiet improvements' },
+  { cat:'business', a:'Lead through influence', b:'Authority' },
+  { cat:'business', a:'Launch before you\'re ready', b:'Miss the window' },
+  { cat:'business', a:'Have perfect information and limited time', b:'Imperfect information and more time' },
+  { cat:'business', a:'Win the argument', b:'Maintain the relationship' },
+  { cat:'business', a:'Address underperformance immediately', b:'Give more time' },
+  { cat:'business', a:'Be visible when things go wrong', b:'Invisible when they go right' },
+  { cat:'business', a:'Manage through metrics', b:'Intuition' },
+  { cat:'business', a:'Invest in retention', b:'Replacement' },
+  { cat:'business', a:'Have your team fear failure', b:'Become complacent with success' },
+  { cat:'business', a:'Be pragmatic about standards', b:'Uncompromising about quality' },
+  { cat:'business', a:'Be known for your vision', b:'Your discipline' },
+  { cat:'business', a:'Compete on price', b:'Differentiation' },
+  { cat:'business', a:'Prioritise employee satisfaction', b:'Customer satisfaction when they conflict' },
+  { cat:'business', a:'Communicate the full picture early', b:'The final decision later' },
+  { cat:'business', a:'Reduce complexity', b:'Increase capability' },
+  { cat:'business', a:'Be held accountable for effort', b:'Outcomes' },
+  { cat:'business', a:'Lead with empathy', b:'Urgency' },
+  { cat:'business', a:'Solve for today\'s crisis', b:'Tomorrow\'s vulnerability' },
+  { cat:'business', a:'Own a small win', b:'Be part of a large one' },
+  { cat:'business', a:'Be the first to try something', b:'The first to perfect it' },
+  { cat:'business', a:'Innovate through experimentation', b:'Research' },
+  { cat:'business', a:'Compromise on speed', b:'Quality when both matter' },
+  { cat:'business', a:'Disrupt your own business', b:'Be disrupted by someone else' },
+  { cat:'business', a:'Manage expectations down', b:'Deliver beyond them' },
+  { cat:'business', a:'Let a good opportunity pass', b:'Take a risky one' },
+  { cat:'business', a:'Create urgency artificially', b:'Wait for it naturally' },
+  { cat:'business', a:'Prioritise margin', b:'Market share' },
+  { cat:'business', a:'Have a difficult conversation face-to-face', b:'In writing' },
+  { cat:'business', a:'Be cautious and miss opportunities', b:'Aggressive and make mistakes' },
+  { cat:'business', a:'Focus resources on your strongest area', b:'Shore up your weakest' },
+  { cat:'business', a:'Compete internally for resources', b:'Collaborate for outcomes' },
+  { cat:'business', a:'Reward loyalty', b:'Performance when they diverge' },
+  { cat:'business', a:'Pursue a certain small return', b:'A possible large one' },
+  { cat:'business', a:'Lead from the front', b:'From behind' },
+  { cat:'business', a:'Have strategic patience', b:'Operational urgency' },
+  { cat:'business', a:'Own the mistake', b:'Distance yourself from it' },
+  { cat:'business', a:'Communicate more often with less clarity', b:'Less often with more precision' },
+  { cat:'business', a:'Face external pressure', b:'Internal resistance' },
+  { cat:'business', a:'Cut what\'s failing', b:'Double down on what\'s working' },
+  { cat:'business', a:'Set ambitious targets that demotivate', b:'Safe ones that don\'t stretch' },
+  { cat:'business', a:'Lead by example', b:'Through delegation' },
+  { cat:'business', a:'Pursue organic growth', b:'Acquisition' },
+  { cat:'business', a:'Have team unity with mediocre results', b:'Tension with excellent results' },
+  { cat:'business', a:'Inherit someone else\'s vision', b:'Create your own in chaos' },
+  { cat:'business', a:'Close a gap through effort', b:'Innovation' },
+  { cat:'business', a:'Have authority that\'s earned', b:'Granted' },
+  { cat:'business', a:'Negotiate from strength', b:'From urgency' },
+  { cat:'business', a:'Preserve relationships', b:'Drive change when both aren\'t possible' },
+  { cat:'business', a:'Celebrate milestones', b:'Maintain focus on the end goal' },
+  { cat:'business', a:'Be directive in a crisis', b:'Collaborative in complexity' },
+  { cat:'business', a:'Shape culture through words', b:'Through actions' },
+  { cat:'leadership', a:'Be transparent and create anxiety', b:'Opaque and create rumours' },
+  { cat:'leadership', a:'Tolerate bad behaviour for results', b:'Remove a high performer to protect culture' },
+  { cat:'leadership', a:'Admit uncertainty publicly', b:'Project confidence you do not feel' },
+  { cat:'leadership', a:'Slow down to bring people with you', b:'Move fast and deal with fallout later' },
+  { cat:'leadership', a:'Optimise for this year', b:'Sacrifice now for long-term position' },
+  { cat:'leadership', a:'Centralise control', b:'Accept inconsistency through autonomy' },
+  { cat:'leadership', a:'Protect trust', b:'Protect momentum when the two conflict' },
+  { cat:'leadership', a:'Listen longer', b:'Decide sooner' },
+  { cat:'leadership', a:'Be liked today', b:'Respected later' },
+  { cat:'leadership', a:'Fix the system', b:'The symptoms' },
+  { cat:'leadership', a:'Deliver bad news immediately', b:'Wait for a better moment' },
+  { cat:'leadership', a:'Inherit a toxic culture with strong performance', b:'Healthy culture with weak performance' },
+  { cat:'leadership', a:'Act on incomplete data', b:'Wait and risk irrelevance' },
+  { cat:'leadership', a:'Protect your team from pressure', b:'Prepare them for reality' },
+  { cat:'leadership', a:'Be consistent', b:'Adaptable when circumstances change' },
+  { cat:'leadership', a:'Have control through process', b:'Freedom through principles' },
+  { cat:'leadership', a:'Address the emotional response', b:'The rational problem first' },
+  { cat:'leadership', a:'Over-communicate and risk noise', b:'Under-communicate and risk confusion' },
+  { cat:'leadership', a:'Be known for your judgement', b:'Your courage' },
+  { cat:'leadership', a:'Address problems at their source', b:'Manage their symptoms temporarily' },
+  { cat:'leadership', a:'Prevent problems', b:'Solve them brilliantly' },
+  { cat:'leadership', a:'Hold someone accountable publicly', b:'Privately' },
+  { cat:'leadership', a:'Lead with vulnerability', b:'Conviction when both carry risk' },
+  { cat:'leadership', a:'Pause to reflect', b:'Push through momentum' },
+  { cat:'leadership', a:'Optimise for efficiency today', b:'Capacity tomorrow' },
+  { cat:'leadership', a:'Enforce standards consistently', b:'Show discretion contextually' },
+  { cat:'leadership', a:'Preserve stability during transition', b:'Drive urgency despite uncertainty' },
+  { cat:'leadership', a:'Be involved in every decision', b:'Empower others and accept variance' },
+  { cat:'leadership', a:'Maintain relationships you\'ve outgrown', b:'End them cleanly' },
+  { cat:'leadership', a:'Eliminate friction', b:'Leverage constraint' },
+  { cat:'leadership', a:'Be the voice of caution', b:'The advocate for ambition' },
+  { cat:'leadership', a:'Forgive repeated mistakes', b:'Set a standard others fear' },
+  { cat:'leadership', a:'Share vulnerability that builds trust', b:'Maintain distance that preserves authority' },
+  { cat:'leadership', a:'Accept gradual decline', b:'Risk disruption for renewal' },
+  { cat:'leadership', a:'Invest in capabilities you lack', b:'Strengthen what already works' },
+  { cat:'leadership', a:'Standardise for scale', b:'Customise for excellence' },
+  { cat:'leadership', a:'Keep trust intact', b:'Solve the problem regardless of cost' },
+  { cat:'leadership', a:'Decide with the data you have', b:'The data you wish you had' },
+  { cat:'leadership', a:'Build lasting relationships', b:'Lasting systems' },
+  { cat:'leadership', a:'Simplify complexity', b:'Master it' },
+  { cat:'leadership', a:'Act on principle', b:'Pragmatism when they conflict' },
+  { cat:'leadership', a:'Hold the line on values', b:'Adapt to survive' },
+  { cat:'leadership', a:'Show confidence during uncertainty', b:'Honesty that creates fear' },
+  { cat:'leadership', a:'Preserve tradition', b:'Disrupt for progress' },
+  { cat:'leadership', a:'Sacrifice near-term gains for long-term health', b:'Vice versa' },
+  { cat:'leadership', a:'Delegate outcomes', b:'Delegate methods' },
+  { cat:'leadership', a:'Be accountable to your conscience', b:'Your stakeholders when they diverge' },
+  { cat:'leadership', a:'Make irreversible progress', b:'Reversible experiments' },
+  { cat:'leadership', a:'Face uncomfortable truths now', b:'Comfortable lies that compound' },
+  { cat:'leadership', a:'Prevent crises', b:'Excel at managing them' },
+  { cat:'leadership', a:'Have followers who execute', b:'Challenge' },
+  { cat:'leadership', a:'Exit a declining market early', b:'Stay and fight for share' },
+  { cat:'leadership', a:'Have clarity about a bad situation', b:'Ambiguity about a good one' },
+  { cat:'leadership', a:'Make peace with compromise', b:'Hold out for better' },
+  { cat:'leadership', a:'Be judged on decisions', b:'Outcomes when luck plays a role' },
+  { cat:'leadership', a:'Inherit momentum without understanding', b:'Start fresh with context' },
+  { cat:'leadership', a:'Defend an imperfect decision you made', b:'Criticise a better one you opposed' },
+  { cat:'leadership', a:'Intervene early and be intrusive', b:'Late and risk failure' },
+  { cat:'leadership', a:'Have loyalty from your team', b:'Credibility with the board' },
+  { cat:'leadership', a:'Redesign the process', b:'Retrain the people' },
+  { cat:'executive', a:'Make an ethically right decision that hurts performance', b:'A profitable decision that makes you uncomfortable' },
+  { cat:'executive', a:'Keep a flawed strategy people believe in', b:'Change direction and lose confidence' },
+  { cat:'executive', a:'Remove leaders who cannot adapt', b:'Adapt the organisation around them' },
+  { cat:'executive', a:'Tell the truth early', b:'Manage the message carefully' },
+  { cat:'executive', a:'Preserve jobs at the risk of survival', b:'Cut early to save the company' },
+  { cat:'executive', a:'Be accountable for a wrong decision', b:'Invisible in a right one' },
+  { cat:'executive', a:'Challenge the board', b:'Protect alignment' },
+  { cat:'executive', a:'Invest despite uncertainty', b:'Wait for proof and accept decline' },
+  { cat:'executive', a:'Lead transformation', b:'Stabilise performance' },
+  { cat:'executive', a:'Act on instinct', b:'Wait for data you may never trust' },
+  { cat:'executive', a:'Make the right decision that divides', b:'The safe decision that unites' },
+  { cat:'executive', a:'Pivot and admit the strategy failed', b:'Persist and risk further loss' },
+  { cat:'executive', a:'Retain institutional knowledge', b:'Bring in fresh perspective' },
+  { cat:'executive', a:'Be honest about problems early', b:'Shield people from worry' },
+  { cat:'executive', a:'Protect people', b:'Protect performance when survival is uncertain' },
+  { cat:'executive', a:'Take personal credit', b:'Share it when you carried the load' },
+  { cat:'executive', a:'Support leadership privately', b:'Voice dissent for integrity' },
+  { cat:'executive', a:'Take a calculated risk', b:'Accept managed decline' },
+  { cat:'executive', a:'Drive transformation that may fail', b:'Manage stability that will erode' },
+  { cat:'executive', a:'Trust your instinct despite doubt', b:'Wait for validation that may not come' },
+  { cat:'executive', a:'Lead an organisation you disagree with', b:'Step aside on principle' },
+  { cat:'executive', a:'Let a popular decision damage long-term value', b:'Make an unpopular one' },
+  { cat:'executive', a:'Keep leaders who resist change', b:'Lose continuity through turnover' },
+  { cat:'executive', a:'Control the narrative with spin', b:'Let the truth create its own story' },
+  { cat:'executive', a:'Act decisively on limited information', b:'Wait for clarity that may not come' },
+  { cat:'executive', a:'Be blamed for a shared failure', b:'Invisible in a shared success' },
+  { cat:'executive', a:'Disagree with governance publicly', b:'Remain silent and complicit' },
+  { cat:'executive', a:'Invest against market sentiment', b:'Follow trends you don\'t believe in' },
+  { cat:'executive', a:'Be the architect of change', b:'The guardian of stability' },
+  { cat:'executive', a:'Act on pattern recognition', b:'Demand proof' },
+  { cat:'executive', a:'Be vindicated too late', b:'Proved wrong in time to adapt' },
+  { cat:'executive', a:'Hold firm on principle at great cost', b:'Compromise for pragmatic gain' },
+  { cat:'executive', a:'Remove someone good for something great', b:'Keep them and limit potential' },
+  { cat:'executive', a:'Manage perception carefully', b:'Trust transparency despite risk' },
+  { cat:'executive', a:'Cut deep once', b:'Make shallow cuts repeatedly' },
+  { cat:'executive', a:'Lead from conviction', b:'Consensus when time is short' },
+  { cat:'executive', a:'Challenge authority for what\'s right', b:'Support unity for what\'s needed' },
+  { cat:'executive', a:'Commit resources to an uncertain future', b:'Preserve them through certain decline' },
+  { cat:'executive', a:'Disrupt for growth', b:'Protect for survival' },
+  { cat:'executive', a:'Decide based on experience', b:'Analysis' },
+  { cat:'executive', a:'Discover failure early and adjust', b:'Late and face consequences' },
+  { cat:'executive', a:'Protect your standing', b:'Your values when both are threatened' },
+  { cat:'executive', a:'Be respected for judgement', b:'Admired for courage' },
+  { cat:'executive', a:'Accept immediate pain', b:'Prolonged suffering' },
+  { cat:'executive', a:'Know emotional consequences in advance', b:'Only after acting' },
+  { cat:'executive', a:'Leave before you fail', b:'Stay and risk your legacy' },
+  { cat:'executive', a:'Be protected from difficult truths', b:'Empowered with full information' },
+  { cat:'executive', a:'Choose certainty with limits', b:'Uncertainty with possibility' },
+  { cat:'executive', a:'Commit decisively', b:'Remain flexible at the cost of clarity' },
+  { cat:'executive', a:'Follow intuition shaped by expertise', b:'Insist on complete information' },
+  { cat:'executive', a:'Be proven right after damage is done', b:'Change course while there\'s time' },
+  { cat:'executive', a:'Defend a strategy people believed in', b:'Abandon it for one they don\'t trust yet' },
+  { cat:'executive', a:'Restructure around capability gaps', b:'Compensate for them' },
+  { cat:'executive', a:'Reveal problems transparently', b:'Shape the message to maintain morale' },
+  { cat:'executive', a:'Save the organisation at the cost of jobs', b:'Preserve jobs and risk collapse' },
+  { cat:'executive', a:'Own a difficult decision visibly', b:'Influence quietly and share accountability' },
+  { cat:'executive', a:'Push back on governance', b:'Preserve alignment at personal cost' },
+  { cat:'executive', a:'Make a leap without proof', b:'Wait for validation as opportunity closes' },
+  { cat:'executive', a:'Rebuild', b:'Sustain when neither guarantees success' },
+  { cat:'executive', a:'Rely on instinct developed over time', b:'Insist on evidence before moving' },
+  { cat:'highstakes', a:'Realise you were wrong early', b:'Be proven wrong publicly later' },
+  { cat:'highstakes', a:'Protect your reputation', b:'Your principles' },
+  { cat:'highstakes', a:'Be remembered for one bold decision', b:'A lifetime of sound judgement' },
+  { cat:'highstakes', a:'Face short-term criticism', b:'Long-term regret' },
+  { cat:'highstakes', a:'Know the emotional cost of a decision in advance', b:'Only see the results after' },
+  { cat:'highstakes', a:'Step aside for the good of the organisation', b:'Stay and fight through doubt' },
+  { cat:'highstakes', a:'Be trusted with the truth', b:'Shielded for morale' },
+  { cat:'highstakes', a:'Choose stability', b:'Possibility when neither is safe' },
+  { cat:'highstakes', a:'Be certain and wrong', b:'Uncertain and learning' },
+  { cat:'highstakes', a:'Protect what you built', b:'Risk it to build something better' },
+  { cat:'highstakes', a:'See the mistake early enough to fix', b:'Be proven wrong once it\'s too late' },
+  { cat:'highstakes', a:'Sacrifice standing for principle', b:'Compromise values for influence' },
+  { cat:'highstakes', a:'Leave a legacy of transformation', b:'Consistency' },
+  { cat:'highstakes', a:'Endure criticism that fades', b:'Regret that persists' },
+  { cat:'highstakes', a:'Preview emotional consequences', b:'Discover them through experience' },
+  { cat:'highstakes', a:'Resign with integrity intact', b:'Fight through doubt and potential failure' },
+  { cat:'highstakes', a:'Have stakeholders trust you with harsh realities', b:'Shield you for morale' },
+  { cat:'highstakes', a:'Preserve stability that\'s eroding', b:'Pursue possibility with no guarantees' },
+  { cat:'highstakes', a:'Be right with poor outcomes', b:'Wrong with good ones' },
+  { cat:'highstakes', a:'Risk what you\'ve built for something greater', b:'Protect your legacy' },
+  { cat:'highstakes', a:'Admit failure while correction is possible', b:'Continue and face inevitable collapse' },
+  { cat:'highstakes', a:'Maintain credibility', b:'Act on conviction when society disagrees' },
+  { cat:'highstakes', a:'Be defined by one transformative risk', b:'Sustained prudent choices' },
+  { cat:'highstakes', a:'Bear short-term damage for long-term position', b:'Vice versa' },
+  { cat:'highstakes', a:'Understand emotional costs before deciding', b:'Maintain clarity without that weight' },
+  { cat:'highstakes', a:'Exit before decline', b:'Attempt revival despite unlikely success' },
+  { cat:'highstakes', a:'Operate with full transparency', b:'Strategic ambiguity for stakeholder stability' },
+  { cat:'highstakes', a:'Choose safety that constrains', b:'Freedom that threatens' },
+  { cat:'highstakes', a:'Have conviction with humility', b:'Confidence without doubt' },
+  { cat:'highstakes', a:'Rebuild from strength', b:'Defend what remains' },
+  { cat:'highstakes', a:'Reverse course early', b:'Persist until certainty emerges' },
+  { cat:'highstakes', a:'Defend your reputation', b:'Your beliefs when forced to choose' },
+  { cat:'highstakes', a:'Be remembered for a calculated career', b:'A defining moment' },
+  { cat:'highstakes', a:'Weather temporary disapproval', b:'Live with permanent compromise' },
+  { cat:'highstakes', a:'Foresee emotional fallout', b:'Act without that knowledge' },
+  { cat:'highstakes', a:'Lead through transition you initiated', b:'Stabilise through one imposed' },
+  { cat:'highstakes', a:'Face difficult truths candidly', b:'Manage them through careful messaging' },
+  { cat:'highstakes', a:'Risk what you\'ve built for improvement', b:'Protect it from potential loss' },
+  { cat:'highstakes', a:'Maintain certainty despite being wrong', b:'Embrace doubt while learning' },
+  { cat:'highstakes', a:'Pursue transformation', b:'Consolidation' },
+  { cat:'highstakes', a:'Accept error with time to adapt', b:'Persist toward inevitable failure' },
+  { cat:'highstakes', a:'Prioritise conscience', b:'Consequences when they\'re in tension' },
+  { cat:'highstakes', a:'Be the architect of one bold transformation', b:'The steward of enduring excellence' },
+  { cat:'highstakes', a:'Face immediate backlash', b:'Deferred regret' },
+  { cat:'highstakes', a:'Have clarity about emotional costs upfront', b:'Discover them through action' },
+  { cat:'highstakes', a:'Make way for new leadership', b:'Fight through self-doubt' },
+  { cat:'highstakes', a:'Operate with radical transparency', b:'Protective discretion' },
+  { cat:'highstakes', a:'Accept constrained safety', b:'Embrace uncertain freedom' },
+  { cat:'highstakes', a:'Be confidently mistaken', b:'Wisely uncertain' },
+  { cat:'highstakes', a:'Abandon security for opportunity', b:'Preserve what works' },
+  { cat:'highstakes', a:'Recognise failure in time to correct', b:'Be validated after it\'s too late' },
+  { cat:'highstakes', a:'Preserve credibility', b:'Integrity when only one survives' },
+  { cat:'highstakes', a:'Be immortalised for boldness', b:'Respected for wisdom' },
+  { cat:'highstakes', a:'Face public scrutiny now', b:'Private regret later' },
+  { cat:'highstakes', a:'Know the emotional price before paying it', b:'Learn it through consequence' },
+  { cat:'highstakes', a:'Exit gracefully', b:'Persist through doubt and potential ruin' },
+  { cat:'highstakes', a:'Be trusted with reality', b:'Protected through selective information' },
+  { cat:'highstakes', a:'Have secure mediocrity', b:'Risky excellence' },
+  { cat:'highstakes', a:'Lead with conviction that might be wrong', b:'Caution that guarantees stagnation' },
+  { cat:'highstakes', a:'Defend what you\'ve achieved', b:'Gamble it for what could be' },
+];
+
+/* ========================= game logic ========================= */
+const gate=document.getElementById('gate'), stage=document.getElementById('stage');
+const badge=document.getElementById('badge'), optA=document.getElementById('optA'), optB=document.getElementById('optB');
+const topHalf=document.getElementById('topHalf'), bottomHalf=document.getElementById('bottomHalf');
+const orBadge=document.getElementById('orBadge'), cueText=document.getElementById('cueText');
+const tierPicker=document.getElementById('tierPicker'), about=document.getElementById('about');
+
+const active = new Set(Object.keys(CATEGORIES));
+let deck=[], motionReady=false, busy=false;
+
+for(const [key,c] of Object.entries(CATEGORIES)){
+  const chip=document.createElement('button');
+  chip.className='chip'; chip.type='button'; chip.setAttribute('aria-pressed','true');
+  chip.style.background=c.a; chip.innerHTML='<span class="swatch"></span>'+c.label;
+  chip.addEventListener('click',()=>{
+    if(active.has(key)){ if(active.size===1) return; active.delete(key); chip.setAttribute('aria-pressed','false'); }
+    else { active.add(key); chip.setAttribute('aria-pressed','true'); }
+  });
+  tierPicker.appendChild(chip);
+}
+
+function reshuffle(){
+  deck = QUESTIONS.map((q,i)=>i).filter(i=>active.has(QUESTIONS[i].cat));
+  for(let i=deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; }
+}
+function nextQuestion(){
+  if(busy) return; busy=true;
+  if(deck.length===0) reshuffle();
+  const q=QUESTIONS[deck.pop()], c=CATEGORIES[q.cat];
+  document.documentElement.style.setProperty('--a',c.a);
+  document.documentElement.style.setProperty('--b',c.b);
+  document.querySelector('meta[name=theme-color]').setAttribute('content',c.b);
+  badge.textContent=c.label; optA.textContent=q.a; optB.textContent=q.b;
+  topHalf.classList.remove('enter'); bottomHalf.classList.remove('enter'); orBadge.classList.remove('pop');
+  void topHalf.offsetWidth;
+  topHalf.classList.add('enter'); bottomHalf.classList.add('enter'); orBadge.classList.add('pop');
+  if(navigator.vibrate) navigator.vibrate(35);
+  setTimeout(()=>{ busy=false; },450);
+}
+
+let lx,ly,lz,lastShake=0; const THRESHOLD=16, COOLDOWN=900;
+function onMotion(e){
+  const acc=e.accelerationIncludingGravity||e.acceleration; if(!acc||acc.x===null) return;
+  const {x,y,z}=acc;
+  if(lx!==undefined){ const d=Math.abs(x-lx)+Math.abs(y-ly)+Math.abs(z-lz), now=Date.now();
+    if(d>THRESHOLD && now-lastShake>COOLDOWN){ lastShake=now; nextQuestion(); } }
+  lx=x; ly=y; lz=z;
+}
+function startGame(){ gate.classList.add('hidden'); stage.classList.remove('hidden'); reshuffle(); nextQuestion(); }
+async function enableAndStart(){
+  const has=typeof DeviceMotionEvent!=='undefined';
+  const needs=has && typeof DeviceMotionEvent.requestPermission==='function';
+  if(needs){ try{ const r=await DeviceMotionEvent.requestPermission(); if(r==='granted'){ window.addEventListener('devicemotion',onMotion); motionReady=true; } }catch(e){} }
+  else if(has){ window.addEventListener('devicemotion',onMotion); motionReady=true; }
+  startGame();
+  if(!motionReady) cueText.textContent='Tap the screen for the next one';
+}
+document.getElementById('start').addEventListener('click',enableAndStart);
+stage.addEventListener('click',nextQuestion);
+
+/* about / gift panel */
+function openAbout(e){ if(e) e.stopPropagation(); about.classList.remove('hidden'); }
+function closeAbout(e){ if(e) e.stopPropagation(); about.classList.add('hidden'); }
+document.getElementById('aboutOpen').addEventListener('click',openAbout);
+document.getElementById('infoBtn').addEventListener('click',openAbout);
+document.getElementById('aboutClose').addEventListener('click',closeAbout);
+about.addEventListener('click',(e)=>{ if(e.target===about) closeAbout(e); });
+
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>{ navigator.serviceWorker.register('service-worker.js').catch(()=>{}); }); }
+</script>
+</body>
+</html>
