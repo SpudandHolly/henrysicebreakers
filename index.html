@@ -50,7 +50,9 @@
   /* ---------- card ---------- */
   #stage{ position:fixed; inset:0; display:flex; flex-direction:column; }
   #infoBtn{ position:fixed; top:calc(env(safe-area-inset-top) + 14px); left:16px; z-index:25; width:34px; height:34px; border-radius:50%; border:1.5px solid rgba(255,255,255,.5); background:rgba(0,0,0,.22); color:#fff; font-family:"Anton",sans-serif; font-size:17px; cursor:pointer; backdrop-filter:blur(6px); }
-  .badge{ position:fixed; top:calc(env(safe-area-inset-top) + 14px); left:50%; transform:translateX(-50%); z-index:20; font-family:"Anton",sans-serif; text-transform:uppercase; letter-spacing:.13em; font-size:12px; padding:8px 16px; border-radius:100px; color:#fff; text-align:center; background:rgba(0,0,0,.28); backdrop-filter:blur(6px); max-width:66vw; }
+  .wyr-label{ position:fixed; top:calc(env(safe-area-inset-top) + 14px); left:50%; transform:translateX(-50%); z-index:20; display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .wyr-title{ font-family:"Anton",sans-serif; text-transform:uppercase; letter-spacing:.08em; font-size:16px; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,.3); }
+  .badge{ font-family:"Anton",sans-serif; text-transform:uppercase; letter-spacing:.13em; font-size:11px; padding:6px 14px; border-radius:100px; color:#fff; text-align:center; background:rgba(0,0,0,.28); backdrop-filter:blur(6px); max-width:66vw; }
   .half{ flex:1; display:flex; align-items:center; justify-content:center; padding:11vh 24px; position:relative; }
   .half.top{ background:var(--a); } .half.bottom{ background:var(--b); }
   .half .opt{ font-family:"Archivo",sans-serif; font-weight:900; font-size:clamp(22px, 6.4vw, 42px); line-height:1.04; text-align:center; text-wrap:balance; max-width:15ch; text-shadow:0 2px 18px rgba(0,0,0,.22); }
@@ -76,6 +78,17 @@
   #about .meta{ font-size:12px; opacity:.5; line-height:1.5; margin:16px 0 20px; }
   #about .close{ font-family:"Anton",sans-serif; text-transform:uppercase; letter-spacing:.04em; font-size:16px; color:var(--ink); background:#ffd23f; border:none; border-radius:100px; padding:13px 34px; cursor:pointer; }
 
+  /* ---------- instructions panel ---------- */
+  #instructions{ position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; padding:26px; background:rgba(10,9,14,.74); backdrop-filter:blur(8px); }
+  #instructions .panel{ max-width:430px; background:#1c1926; border:1px solid rgba(255,255,255,.1); border-radius:22px; padding:30px 26px; text-align:center; max-height:88vh; overflow-y:auto; }
+  #instructions .gifttag{ font-family:"Anton",sans-serif; text-transform:uppercase; letter-spacing:.26em; font-size:12px; color:#ffd23f; margin-bottom:12px; }
+  #instructions h2{ font-family:"Anton",sans-serif; font-size:25px; text-transform:uppercase; line-height:.96; margin-bottom:14px; }
+  #instructions p{ font-weight:500; font-size:14px; line-height:1.55; opacity:.84; margin-bottom:11px; }
+  #instructions p strong{ opacity:1; color:#ffd23f; }
+  #instructions ul{ text-align:left; font-weight:500; font-size:14px; line-height:1.55; opacity:.84; margin:16px 0; padding-left:20px; }
+  #instructions li{ margin-bottom:8px; }
+  #instructions .close{ font-family:"Anton",sans-serif; text-transform:uppercase; letter-spacing:.04em; font-size:16px; color:var(--ink); background:#ffd23f; border:none; border-radius:100px; padding:13px 34px; cursor:pointer; margin-top:8px; }
+
   .hidden{ display:none !important; }
 </style>
 </head>
@@ -87,17 +100,37 @@
     <p>Before every meeting, shake for a would-you-rather scenario. One question, no right answer—just a moment to think differently and discuss openly with your team.</p>
     <div class="tiers" id="tierPicker"></div>
     <button id="start">Start shaking</button>
+    <button class="about-link" id="instructionsOpen" type="button">How to play</button>
     <button class="about-link" id="aboutOpen" type="button">About this gift</button>
     <div class="hint" id="gateHint">Tap to allow motion access</div>
   </div>
 
   <div id="stage" class="hidden" aria-live="polite">
     <button id="infoBtn" type="button" aria-label="About this gift">i</button>
-    <div class="badge" id="badge">Tier</div>
+    <div class="wyr-label">
+      <div class="wyr-title">Would You Rather</div>
+      <div class="badge" id="badge">Tier</div>
+    </div>
     <section class="half top" id="topHalf"><div class="opt" id="optA">Option A</div></section>
     <div class="or-badge" id="orBadge">OR</div>
     <section class="half bottom" id="bottomHalf"><div class="opt" id="optB">Option B</div></section>
     <div class="cue" id="cue"><span class="dot"></span><span id="cueText">Shake for the next one</span></div>
+  </div>
+
+  <div id="instructions" class="hidden">
+    <div class="panel" role="dialog" aria-modal="true" aria-label="How to play">
+      <div class="gifttag">How to play</div>
+      <h2>Would You Rather?</h2>
+      <p>Two scenarios. No right answer. <strong>Pick one and defend it.</strong></p>
+      <ul>
+        <li>Shake your phone (or tap the screen) for a new dilemma</li>
+        <li>You have <strong>5 seconds</strong> to think</li>
+        <li>Then debate your choice with your team</li>
+        <li>One question per meeting is typical, but use as many as you like</li>
+      </ul>
+      <p>The goal? Get people thinking, talking, and opening up to different viewpoints before the meeting begins.</p>
+      <button class="close" id="instructionsClose" type="button">Got it</button>
+    </div>
   </div>
 
   <div id="about" class="hidden">
@@ -488,6 +521,14 @@ async function enableAndStart(){
 }
 document.getElementById('start').addEventListener('click',enableAndStart);
 stage.addEventListener('click',nextQuestion);
+
+/* instructions panel */
+const instructions=document.getElementById('instructions');
+function openInstructions(e){ if(e) e.stopPropagation(); instructions.classList.remove('hidden'); }
+function closeInstructions(e){ if(e) e.stopPropagation(); instructions.classList.add('hidden'); }
+document.getElementById('instructionsOpen').addEventListener('click',openInstructions);
+document.getElementById('instructionsClose').addEventListener('click',closeInstructions);
+instructions.addEventListener('click',(e)=>{ if(e.target===instructions) closeInstructions(e); });
 
 /* about / gift panel */
 function openAbout(e){ if(e) e.stopPropagation(); about.classList.remove('hidden'); }
