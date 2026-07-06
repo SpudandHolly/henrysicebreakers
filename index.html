@@ -89,6 +89,25 @@
   #instructions li{ margin-bottom:8px; }
   #instructions .close{ font-family:"Anton",sans-serif; text-transform:uppercase; letter-spacing:.04em; font-size:16px; color:var(--ink); background:#ffd23f; border:none; border-radius:100px; padding:13px 34px; cursor:pointer; margin-top:8px; }
 
+  /* ---------- stats panel ---------- */
+  #stats{ position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; padding:26px; background:rgba(10,9,14,.74); backdrop-filter:blur(8px); }
+  #stats .panel{ max-width:430px; width:100%; background:#1c1926; border:1px solid rgba(255,255,255,.1); border-radius:22px; padding:30px 26px; text-align:center; max-height:88vh; overflow-y:auto; }
+  #stats .gifttag{ font-family:"Anton",sans-serif; text-transform:uppercase; letter-spacing:.26em; font-size:12px; color:#ffd23f; margin-bottom:12px; }
+  #stats h2{ font-family:"Anton",sans-serif; font-size:25px; text-transform:uppercase; line-height:.96; margin-bottom:18px; }
+  #stats .stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+  #stats .stat-box{ background:rgba(255,255,255,.05); border-radius:12px; padding:16px 12px; }
+  #stats .stat-value{ font-family:"Anton",sans-serif; font-size:32px; color:#ffd23f; line-height:1; }
+  #stats .stat-label{ font-size:11px; text-transform:uppercase; letter-spacing:.1em; opacity:.6; margin-top:6px; }
+  #stats .cat-breakdown{ text-align:left; margin:16px 0; }
+  #stats .cat-row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  #stats .cat-swatch{ width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+  #stats .cat-name{ font-size:13px; font-weight:600; flex:1; }
+  #stats .cat-bar-wrap{ flex:2; height:8px; background:rgba(255,255,255,.1); border-radius:4px; overflow:hidden; }
+  #stats .cat-bar{ height:100%; border-radius:4px; transition:width .3s ease; }
+  #stats .cat-count{ font-size:12px; opacity:.6; min-width:28px; text-align:right; }
+  #stats .meta{ font-size:12px; opacity:.5; line-height:1.5; margin:16px 0 20px; }
+  #stats .close{ font-family:"Anton",sans-serif; text-transform:uppercase; letter-spacing:.04em; font-size:16px; color:var(--ink); background:#ffd23f; border:none; border-radius:100px; padding:13px 34px; cursor:pointer; }
+
   .hidden{ display:none !important; }
 </style>
 </head>
@@ -101,6 +120,7 @@
     <div class="tiers" id="tierPicker"></div>
     <button id="start">Start shaking</button>
     <button class="about-link" id="instructionsOpen" type="button">How to play</button>
+    <button class="about-link" id="statsOpen" type="button">Usage stats</button>
     <button class="about-link" id="aboutOpen" type="button">About this gift</button>
     <div class="hint" id="gateHint">Tap to allow motion access</div>
   </div>
@@ -133,13 +153,28 @@
     </div>
   </div>
 
+  <div id="stats" class="hidden">
+    <div class="panel" role="dialog" aria-modal="true" aria-label="Usage stats">
+      <div class="gifttag">Usage stats</div>
+      <h2>How It's Being Used</h2>
+      <div class="stat-grid">
+        <div class="stat-box"><div class="stat-value" id="statQuestions">0</div><div class="stat-label">Questions</div></div>
+        <div class="stat-box"><div class="stat-value" id="statSessions">0</div><div class="stat-label">Sessions</div></div>
+        <div class="stat-box"><div class="stat-value" id="statTime">0m</div><div class="stat-label">Total time</div></div>
+        <div class="stat-box"><div class="stat-value" id="statLastUsed">-</div><div class="stat-label">Last used</div></div>
+      </div>
+      <div class="cat-breakdown" id="catBreakdown"></div>
+      <button class="close" id="statsClose" type="button">Got it</button>
+    </div>
+  </div>
+
   <div id="about" class="hidden">
     <div class="panel" role="dialog" aria-modal="true" aria-label="About this gift">
       <div class="gifttag">A gift for Henry</div>
       <h2>Henry&#39;s Icebreakers</h2>
-      <p>A companion to <em>Be a Better Boss</em> by Henry Engelhardt, who built one of the best places to work anywhere by treating enjoying the work and winning at it as the same thing.</p>
+      <p>A companion to <em><a href="https://www.amazon.co.uk/Be-Better-Boss-organization-success/dp/191563525X/ref=sr_1_1?dib=eyJ2IjoiMSJ9.UlhVqdHDikbou6eWd8xiR7b4BzRaYYDtB5WjM8Wt69vaMO-Qu_GmV2un2k9lThdefImlziQ3T9tIBJxzWDbFlaAwqZdtad0INIs0RUsJ2qr6tQjCeaRB8zE9vLXNHBgf8GlSl5ZBgry2AbDUMxMoZxiHPOQM8Dh1_wGcozcEjCebH9bhJ3OcR5-K_Q6gdSGU0tJbglEf87-S23A3ihSJBftefWqRZZhX6FQqXJWgvhA.V6Xh9SAyYWtys4IntTLLyZ-6dsoI2hXE_3Qmfx7AVKs&dib_tag=se&keywords=be+a+better+boss&qid=1783324644&sr=8-1" target="_blank" rel="noopener" style="color:#ffd23f;text-decoration:underline;">Be a Better Boss</a></em> by Henry Engelhardt, who built one of the best places to work anywhere by treating enjoying the work and winning at it as the same thing.</p>
       <p>Before every meeting, shake for a would-you-rather scenario. One question, no right answer—just a moment to help your team think differently and discuss openly. 300 dilemmas across five tiers, from Friday-meeting fun to the calls that quietly shape a culture.</p>
-      <p class="meta">In the spirit of the book, whose profits support the Moondance Foundation.<br>Built with Cavefish.</p>
+      <p class="meta">In the spirit of the book, whose profits support the <a href="https://moondancefoundation.org.uk/" target="_blank" rel="noopener" style="color:#ffd23f;text-decoration:underline;">Moondance Foundation</a>.<br>Built with <a href="https://cavefish.ai" target="_blank" rel="noopener" style="color:#ffd23f;text-decoration:underline;">Cavefish</a>.</p>
       <button class="close" id="aboutClose" type="button">Got it</button>
     </div>
   </div>
@@ -487,10 +522,12 @@ function reshuffle(){
   deck = QUESTIONS.map((q,i)=>i).filter(i=>active.has(QUESTIONS[i].cat));
   for(let i=deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; }
 }
+let currentCat=null;
 function nextQuestion(){
   if(busy) return; busy=true;
   if(deck.length===0) reshuffle();
   const q=QUESTIONS[deck.pop()], c=CATEGORIES[q.cat];
+  currentCat=q.cat;
   document.documentElement.style.setProperty('--a',c.a);
   document.documentElement.style.setProperty('--b',c.b);
   document.querySelector('meta[name=theme-color]').setAttribute('content',c.b);
@@ -499,18 +536,26 @@ function nextQuestion(){
   void topHalf.offsetWidth;
   topHalf.classList.add('enter'); bottomHalf.classList.add('enter'); orBadge.classList.add('pop');
   if(navigator.vibrate) navigator.vibrate(35);
+  if(typeof trackStat==='function') trackStat('question',{category:q.cat});
   setTimeout(()=>{ busy=false; },450);
 }
 
-let lx,ly,lz,lastShake=0; const THRESHOLD=16, COOLDOWN=900;
+let lx,ly,lz,lastShake=0,shakeCount=0,shakeTimeout=null;
+const THRESHOLD=16, SHAKE_COOLDOWN=150, SHAKE_REQUIRED=2, SHAKE_WINDOW=1500;
 function onMotion(e){
   const acc=e.accelerationIncludingGravity||e.acceleration; if(!acc||acc.x===null) return;
   const {x,y,z}=acc;
   if(lx!==undefined){ const d=Math.abs(x-lx)+Math.abs(y-ly)+Math.abs(z-lz), now=Date.now();
-    if(d>THRESHOLD && now-lastShake>COOLDOWN){ lastShake=now; nextQuestion(); } }
+    if(d>THRESHOLD && now-lastShake>SHAKE_COOLDOWN){
+      lastShake=now; shakeCount++;
+      if(shakeTimeout) clearTimeout(shakeTimeout);
+      shakeTimeout=setTimeout(()=>{ shakeCount=0; }, SHAKE_WINDOW);
+      if(shakeCount>=SHAKE_REQUIRED){ shakeCount=0; clearTimeout(shakeTimeout); nextQuestion(); }
+    }
+  }
   lx=x; ly=y; lz=z;
 }
-function startGame(){ gate.classList.add('hidden'); stage.classList.remove('hidden'); reshuffle(); nextQuestion(); }
+function startGame(){ gate.classList.add('hidden'); stage.classList.remove('hidden'); reshuffle(); nextQuestion(); if(typeof trackStat==='function') trackStat('session'); if(typeof sessionStart!=='undefined') sessionStart=Date.now(); }
 async function enableAndStart(){
   const has=typeof DeviceMotionEvent!=='undefined';
   const needs=has && typeof DeviceMotionEvent.requestPermission==='function';
@@ -529,6 +574,58 @@ function closeInstructions(e){ if(e) e.stopPropagation(); instructions.classList
 document.getElementById('instructionsOpen').addEventListener('click',openInstructions);
 document.getElementById('instructionsClose').addEventListener('click',closeInstructions);
 instructions.addEventListener('click',(e)=>{ if(e.target===instructions) closeInstructions(e); });
+
+/* stats panel and tracking */
+const statsPanel=document.getElementById('stats');
+const CAT_COLORS={icebreakers:'#f59e0b',business:'#10b981',leadership:'#3b82f6',executive:'#8b5cf6',highstakes:'#f43f5e'};
+const CAT_LABELS={icebreakers:'Fun & Icebreakers',business:'Light Business Reality',leadership:'Leadership Trade-offs',executive:'Executive Judgement',highstakes:'High-Stakes Reflection'};
+let sessionStart=null;
+
+async function trackStat(action,data={}){
+  try{ await fetch('/api/stats',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...data})}); }catch(e){}
+}
+function formatTime(secs){
+  if(secs<60) return secs+'s';
+  if(secs<3600) return Math.floor(secs/60)+'m';
+  return Math.floor(secs/3600)+'h '+Math.floor((secs%3600)/60)+'m';
+}
+function formatDate(iso){
+  if(!iso) return '-';
+  const d=new Date(iso),now=new Date(),diff=now-d;
+  if(diff<86400000) return 'Today';
+  if(diff<172800000) return 'Yesterday';
+  return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+}
+async function loadStats(){
+  try{
+    const res=await fetch('/api/stats');
+    const s=await res.json();
+    document.getElementById('statQuestions').textContent=s.totalQuestions||0;
+    document.getElementById('statSessions').textContent=s.totalSessions||0;
+    document.getElementById('statTime').textContent=formatTime(s.totalTimeSeconds||0);
+    document.getElementById('statLastUsed').textContent=formatDate(s.lastUsed);
+    const breakdown=document.getElementById('catBreakdown');
+    const maxCat=Math.max(...Object.values(s.categories||{}),1);
+    breakdown.innerHTML=Object.entries(s.categories||{}).map(([k,v])=>`
+      <div class="cat-row">
+        <span class="cat-swatch" style="background:${CAT_COLORS[k]}"></span>
+        <span class="cat-name">${CAT_LABELS[k]}</span>
+        <div class="cat-bar-wrap"><div class="cat-bar" style="width:${(v/maxCat)*100}%;background:${CAT_COLORS[k]}"></div></div>
+        <span class="cat-count">${v}</span>
+      </div>
+    `).join('');
+  }catch(e){}
+}
+function openStats(e){ if(e) e.stopPropagation(); loadStats(); statsPanel.classList.remove('hidden'); }
+function closeStats(e){ if(e) e.stopPropagation(); statsPanel.classList.add('hidden'); }
+document.getElementById('statsOpen').addEventListener('click',openStats);
+document.getElementById('statsClose').addEventListener('click',closeStats);
+statsPanel.addEventListener('click',(e)=>{ if(e.target===statsPanel) closeStats(e); });
+
+/* track session time */
+window.addEventListener('focus',()=>{ sessionStart=Date.now(); });
+window.addEventListener('blur',()=>{ if(sessionStart){ const secs=Math.floor((Date.now()-sessionStart)/1000); if(secs>0) trackStat('time',{sessionSeconds:secs}); sessionStart=null; } });
+window.addEventListener('beforeunload',()=>{ if(sessionStart){ const secs=Math.floor((Date.now()-sessionStart)/1000); if(secs>0) trackStat('time',{sessionSeconds:secs}); } });
 
 /* about / gift panel */
 function openAbout(e){ if(e) e.stopPropagation(); about.classList.remove('hidden'); }
