@@ -49,7 +49,7 @@
 
   /* ---------- card ---------- */
   #stage{ position:fixed; inset:0; display:flex; flex-direction:column; }
-  #infoBtn{ position:fixed; top:calc(env(safe-area-inset-top) + 14px); left:16px; z-index:25; width:34px; height:34px; border-radius:50%; border:1.5px solid rgba(255,255,255,.5); background:rgba(0,0,0,.22); color:#fff; font-family:"Anton",sans-serif; font-size:17px; cursor:pointer; backdrop-filter:blur(6px); }
+  #infoBtn, #jokeInfoBtn{ position:fixed; top:calc(env(safe-area-inset-top) + 14px); left:16px; z-index:25; width:34px; height:34px; border-radius:50%; border:1.5px solid rgba(255,255,255,.5); background:rgba(0,0,0,.22); color:#fff; font-family:"Anton",sans-serif; font-size:17px; cursor:pointer; backdrop-filter:blur(6px); }
   .wyr-label{ position:fixed; top:calc(env(safe-area-inset-top) + 14px); left:50%; transform:translateX(-50%); z-index:20; display:flex; flex-direction:column; align-items:center; gap:6px; }
   .wyr-title{ font-family:"Anton",sans-serif; text-transform:uppercase; letter-spacing:.08em; font-size:16px; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,.3); }
   .badge{ font-family:"Anton",sans-serif; text-transform:uppercase; letter-spacing:.13em; font-size:11px; padding:6px 14px; border-radius:100px; color:#fff; text-align:center; background:rgba(0,0,0,.28); backdrop-filter:blur(6px); max-width:66vw; }
@@ -109,6 +109,25 @@
   #stats .close{ font-family:"Anton",sans-serif; text-transform:uppercase; letter-spacing:.04em; font-size:16px; color:var(--ink); background:#ffd23f; border:none; border-radius:100px; padding:13px 34px; cursor:pointer; }
 
   .hidden{ display:none !important; }
+
+  /* ---------- game mode picker ---------- */
+  .mode-picker{ display:flex; gap:12px; margin-bottom:8px; }
+  .mode-btn{ font-family:"Anton", sans-serif; text-transform:uppercase; letter-spacing:.04em; font-size:15px; color:var(--paper); background:rgba(255,255,255,.08); border:2px solid transparent; border-radius:100px; padding:14px 22px; cursor:pointer; transition:all .15s ease; flex:1; }
+  .mode-btn:hover{ background:rgba(255,255,255,.12); }
+  .mode-btn.active{ background:#ffd23f; color:var(--ink); border-color:#ffd23f; }
+  .mode-btn .mode-icon{ font-size:18px; margin-right:6px; }
+
+  /* ---------- dad jokes stage ---------- */
+  #jokeStage{ position:fixed; inset:0; display:flex; flex-direction:column; }
+  .dj-label{ position:fixed; top:calc(env(safe-area-inset-top) + 14px); left:50%; transform:translateX(-50%); z-index:20; display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .dj-title{ font-family:"Anton",sans-serif; text-transform:uppercase; letter-spacing:.08em; font-size:16px; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,.3); }
+  .half.question{ background:var(--a); }
+  .half.answer{ background:var(--b); }
+  .joke-badge{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10; width:74px; height:74px; border-radius:50%; background:var(--paper); color:var(--or); display:flex; align-items:center; justify-content:center; font-family:"Anton",sans-serif; font-size:22px; box-shadow:0 12px 30px rgba(0,0,0,.35); }
+  .joke-badge.pop{ animation:pop .5s .18s cubic-bezier(.2,.9,.25,1.4) both; }
+  .question.enter{ animation:slideDown .42s cubic-bezier(.2,.9,.25,1.15) both; }
+  .answer.enter{ animation:slideUp .42s cubic-bezier(.2,.9,.25,1.15) both; }
+  @media (prefers-reduced-motion: reduce){ .question.enter,.answer.enter,.joke-badge.pop{ animation:none; } }
 </style>
 </head>
 <body>
@@ -116,8 +135,13 @@
   <div id="gate">
     <div class="eyebrow">A companion to Be a Better Boss</div>
     <div class="mark"><span class="lo">Henry&#39;s</span><br><span class="hi">Icebreakers</span></div>
-    <p>Before every meeting, shake for a would-you-rather scenario. One question, no right answer—just a moment to think differently and discuss openly with your team.</p>
+    <p id="modeDesc">Before every meeting, shake for a would-you-rather scenario. One question, no right answer—just a moment to think differently and discuss openly with your team.</p>
+    <div class="mode-picker" id="modePicker">
+      <button class="mode-btn active" id="modeWYR" type="button">Would You Rather</button>
+      <button class="mode-btn" id="modeDJ" type="button">Dad Jokes</button>
+    </div>
     <div class="tiers" id="tierPicker"></div>
+    <div class="tiers hidden" id="jokeTierPicker"></div>
     <button id="start">Start shaking</button>
     <button class="about-link" id="instructionsOpen" type="button">How to play</button>
     <button class="about-link" id="statsOpen" type="button">Usage stats</button>
@@ -135,6 +159,18 @@
     <div class="or-badge" id="orBadge">OR</div>
     <section class="half bottom" id="bottomHalf"><div class="opt" id="optB">Option B</div></section>
     <div class="cue" id="cue"><span class="dot"></span><span id="cueText">Shake for the next one</span></div>
+  </div>
+
+  <div id="jokeStage" class="hidden" aria-live="polite">
+    <button id="jokeInfoBtn" type="button" aria-label="About this gift">i</button>
+    <div class="dj-label">
+      <div class="dj-title">Dad Jokes</div>
+      <div class="badge" id="jokeBadge">Category</div>
+    </div>
+    <section class="half question" id="jokeTopHalf"><div class="opt" id="jokeQ">Question?</div></section>
+    <div class="joke-badge" id="jokeDivider">?!</div>
+    <section class="half answer" id="jokeBottomHalf"><div class="opt" id="jokeA">Punchline!</div></section>
+    <div class="cue" id="jokeCue"><span class="dot"></span><span id="jokeCueText">Shake for the next one</span></div>
   </div>
 
   <div id="instructions" class="hidden">
@@ -497,6 +533,523 @@ const QUESTIONS = [
   { cat:'highstakes', a:'Defend what you\'ve achieved', b:'Gamble it for what could be' },
 ];
 
+/* ========================= dad jokes data ========================= */
+const DAD_JOKES_CATEGORIES = {
+  animals: { label: 'Animals', a: '#10b981', b: '#047857' },
+  food: { label: 'Food & Drink', a: '#f59e0b', b: '#b45309' },
+  school: { label: 'School', a: '#3b82f6', b: '#1d4ed8' },
+  science: { label: 'Science', a: '#8b5cf6', b: '#6d28d9' },
+  sport: { label: 'Sport', a: '#ef4444', b: '#b91c1c' },
+  music: { label: 'Music', a: '#ec4899', b: '#be185d' },
+  nature: { label: 'Nature', a: '#14b8a6', b: '#0d9488' },
+  jobs: { label: 'Jobs', a: '#f97316', b: '#c2410c' },
+  wordplay: { label: 'Wordplay', a: '#6366f1', b: '#4338ca' },
+  silly: { label: 'Silly', a: '#a855f7', b: '#7e22ce' },
+};
+
+const DAD_JOKES = [
+  { cat:'animals', q:'What do you call a fish without eyes?', a:'A fsh!' },
+  { cat:'animals', q:'Why don\'t elephants use computers?', a:'Because they\'re afraid of the mouse!' },
+  { cat:'animals', q:'What do you call a sleeping dinosaur?', a:'A dino-snore!' },
+  { cat:'animals', q:'Why do cows wear bells?', a:'Because their horns don\'t work!' },
+  { cat:'animals', q:'What do you call a bear with no teeth?', a:'A gummy bear!' },
+  { cat:'animals', q:'Why don\'t oysters share?', a:'Because they\'re shellfish!' },
+  { cat:'animals', q:'What do you call a dog that does magic?', a:'A Labracadabrador!' },
+  { cat:'animals', q:'Why do seagulls fly over the sea?', a:'Because if they flew over the bay, they\'d be bagels!' },
+  { cat:'animals', q:'What do you call a pig that knows karate?', a:'A pork chop!' },
+  { cat:'animals', q:'Why are frogs so happy?', a:'They eat whatever bugs them!' },
+  { cat:'animals', q:'What do you call a cow with no legs?', a:'Ground beef!' },
+  { cat:'animals', q:'Why do bees have sticky hair?', a:'Because they use honeycombs!' },
+  { cat:'animals', q:'What do you call a lazy kangaroo?', a:'A pouch potato!' },
+  { cat:'animals', q:'Why don\'t cats play poker in the jungle?', a:'Too many cheetahs!' },
+  { cat:'animals', q:'What do you call a fly without wings?', a:'A walk!' },
+  { cat:'animals', q:'Why did the chicken join a band?', a:'Because it had the drumsticks!' },
+  { cat:'animals', q:'What do you call a deer with no eyes?', a:'No idea!' },
+  { cat:'animals', q:'Why are fish so clever?', a:'Because they live in schools!' },
+  { cat:'animals', q:'What do you call a cow in an earthquake?', a:'A milkshake!' },
+  { cat:'animals', q:'Why do ducks have tail feathers?', a:'To cover their butt quacks!' },
+  { cat:'animals', q:'What do you call a snake that\'s 3.14 metres long?', a:'A pi-thon!' },
+  { cat:'animals', q:'Why did the spider go on the computer?', a:'To check his website!' },
+  { cat:'animals', q:'What do you call a penguin in the desert?', a:'Lost!' },
+  { cat:'animals', q:'Why don\'t leopards play hide and seek?', a:'Because they\'re always spotted!' },
+  { cat:'animals', q:'What do you call a fish that wears a crown?', a:'A king fish!' },
+  { cat:'animals', q:'Why did the octopus beat the shark in a fight?', a:'Because it was well armed!' },
+  { cat:'animals', q:'What do you get when you cross a sheep and a kangaroo?', a:'A woolly jumper!' },
+  { cat:'animals', q:'Why are elephants so wrinkled?', a:'Have you ever tried to iron one?' },
+  { cat:'animals', q:'What do you call a horse that lives next door?', a:'A neigh-bour!' },
+  { cat:'animals', q:'Why did the cow go to space?', a:'To see the moooon!' },
+  { cat:'animals', q:'What do you call a rabbit with fleas?', a:'Bugs Bunny!' },
+  { cat:'animals', q:'Why do birds fly south in winter?', a:'Because it\'s too far to walk!' },
+  { cat:'animals', q:'What do you call a cat that gets everything it wants?', a:'Purrr-suasive!' },
+  { cat:'animals', q:'Why did the turtle cross the road?', a:'To get to the Shell garage!' },
+  { cat:'animals', q:'What do you call a camel with no humps?', a:'Humphrey!' },
+  { cat:'animals', q:'Why don\'t crabs give to charity?', a:'Because they\'re shellfish!' },
+  { cat:'animals', q:'What do you call a bird that\'s afraid to fly?', a:'A chicken!' },
+  { cat:'animals', q:'Why did the monkey fall out of the tree?', a:'Because it was dead!' },
+  { cat:'animals', q:'What do you call a duck that steals?', a:'A robber ducky!' },
+  { cat:'animals', q:'Why are cats bad at telling stories?', a:'Because they only have one tale!' },
+  { cat:'animals', q:'What do you call a dog in winter?', a:'A chilly dog!' },
+  { cat:'animals', q:'Why did the bee get married?', a:'Because he found his honey!' },
+  { cat:'animals', q:'What do you call a dinosaur that crashes cars?', a:'Tyrannosaurus Wrecks!' },
+  { cat:'animals', q:'Why do gorillas have big nostrils?', a:'Because they have big fingers!' },
+  { cat:'animals', q:'What do you call a sheep covered in chocolate?', a:'A chocolate baa!' },
+  { cat:'animals', q:'Why did the hen sit on the axe?', a:'She wanted to hatchet!' },
+  { cat:'animals', q:'What do you call an alligator wearing a waistcoat?', a:'An investigator!' },
+  { cat:'animals', q:'Why don\'t ants get ill?', a:'Because they have little antibodies!' },
+  { cat:'animals', q:'What do you call a parrot that flew away?', a:'A polygon!' },
+  { cat:'animals', q:'Why did the owl invite his friends over?', a:'He didn\'t want to be owl by himself!' },
+  { cat:'food', q:'Why did the tomato turn red?', a:'Because it saw the salad dressing!' },
+  { cat:'food', q:'What do you call a fake noodle?', a:'An impasta!' },
+  { cat:'food', q:'Why did the banana go to the doctor?', a:'Because it wasn\'t peeling well!' },
+  { cat:'food', q:'What cheese is made backwards?', a:'Edam!' },
+  { cat:'food', q:'Why do mushrooms get invited to parties?', a:'Because they\'re such fungi!' },
+  { cat:'food', q:'What did the grape say when it got stepped on?', a:'Nothing, it just let out a little wine!' },
+  { cat:'food', q:'Why did the cookie go to the hospital?', a:'Because it felt crummy!' },
+  { cat:'food', q:'What do you call a sad strawberry?', a:'A blueberry!' },
+  { cat:'food', q:'Why don\'t eggs tell jokes?', a:'They\'d crack each other up!' },
+  { cat:'food', q:'What did the lettuce say to the celery?', a:'Quit stalking me!' },
+  { cat:'food', q:'Why did the melon jump into the lake?', a:'It wanted to be a watermelon!' },
+  { cat:'food', q:'What do you call a sleeping pizza?', a:'A piZZZZa!' },
+  { cat:'food', q:'Why did the bread break up with margarine?', a:'For a butter lover!' },
+  { cat:'food', q:'What\'s a vampire\'s favourite fruit?', a:'A blood orange!' },
+  { cat:'food', q:'Why did the orange stop rolling?', a:'It ran out of juice!' },
+  { cat:'food', q:'What do you call cheese that isn\'t yours?', a:'Nacho cheese!' },
+  { cat:'food', q:'Why do potatoes make good detectives?', a:'Because they keep their eyes peeled!' },
+  { cat:'food', q:'What did the hungry clock do?', a:'It went back four seconds!' },
+  { cat:'food', q:'Why did the lemon fail its driving test?', a:'It kept peeling out!' },
+  { cat:'food', q:'What do you call a peanut in a spacesuit?', a:'An astronut!' },
+  { cat:'food', q:'Why did the apple go out with a fig?', a:'Because it couldn\'t find a date!' },
+  { cat:'food', q:'What\'s a ghost\'s favourite dessert?', a:'I scream!' },
+  { cat:'food', q:'Why did the coffee file a police report?', a:'It got mugged!' },
+  { cat:'food', q:'What do you call a lazy spud?', a:'A couch potato!' },
+  { cat:'food', q:'Why do watermelons have fancy weddings?', a:'Because they cantaloupe!' },
+  { cat:'food', q:'What did the salt say to the pepper?', a:'Season\'s greetings!' },
+  { cat:'food', q:'Why did the yogurt go to the art museum?', a:'Because it was cultured!' },
+  { cat:'food', q:'What do you call an angry carrot?', a:'A steamed vegetable!' },
+  { cat:'food', q:'Why did the ice cream cone go to therapy?', a:'It had a meltdown!' },
+  { cat:'food', q:'What\'s a scarecrow\'s favourite fruit?', a:'Straw-berries!' },
+  { cat:'food', q:'Why did the chewing gum cross the road?', a:'It was stuck to the chicken\'s foot!' },
+  { cat:'food', q:'What do you call a fish and chip shop in Wales?', a:'A plaice in the valleys!' },
+  { cat:'food', q:'Why did the biscuit cry?', a:'Because its mum was a wafer so long!' },
+  { cat:'food', q:'What\'s a cucumber\'s favourite TV channel?', a:'Pickle-odeon!' },
+  { cat:'food', q:'Why don\'t hot dogs do well in school?', a:'Because they\'re always getting roasted!' },
+  { cat:'food', q:'What did the sushi say to the bee?', a:'Wasabi!' },
+  { cat:'food', q:'Why did the curry go to the gym?', a:'To get a bit more seasoned!' },
+  { cat:'food', q:'What do you call a pie that fights crime?', a:'Pie-rate!' },
+  { cat:'food', q:'Why are crisps such good musicians?', a:'Because they\'re always a-salt and vinegar!' },
+  { cat:'food', q:'What did the toast say to the bread?', a:'You\'re my butter half!' },
+  { cat:'food', q:'Why did the tin go to prison?', a:'Because it got canned!' },
+  { cat:'food', q:'What\'s a pepper\'s favourite martial art?', a:'Capsai-karate!' },
+  { cat:'food', q:'Why did the cupcake go to the doctor?', a:'It was feeling a bit crumbly!' },
+  { cat:'food', q:'What do you call a Scottish cake?', a:'A Scone-tish treat!' },
+  { cat:'food', q:'Why did the fizzy drink win the race?', a:'Because it had so much pop!' },
+  { cat:'food', q:'What\'s orange and sounds like a parrot?', a:'A carrot!' },
+  { cat:'food', q:'Why did the lunch box break up with the thermos?', a:'Things got too heated!' },
+  { cat:'food', q:'What do you call a chip that tells jokes?', a:'A comedic-crisp!' },
+  { cat:'food', q:'Why did the jam go to school?', a:'To get a little spread of knowledge!' },
+  { cat:'food', q:'What do you call a fish supper that sings?', a:'A tuna!' },
+  { cat:'school', q:'Why did the student eat his homework?', a:'Because his teacher told him it was a piece of cake!' },
+  { cat:'school', q:'What do you call a teacher who doesn\'t fart in public?', a:'A private tutor!' },
+  { cat:'school', q:'Why was the maths book sad?', a:'Because it had too many problems!' },
+  { cat:'school', q:'What\'s a snake\'s favourite subject?', a:'Hiss-tory!' },
+  { cat:'school', q:'Why did the pencil win the argument?', a:'Because it had a good point!' },
+  { cat:'school', q:'What do you call a dinosaur that knows a lot of words?', a:'A thesaurus!' },
+  { cat:'school', q:'Why did the geography teacher drown?', a:'His grades were below C-level!' },
+  { cat:'school', q:'What\'s a witch\'s favourite subject?', a:'Spelling!' },
+  { cat:'school', q:'Why did the music teacher need a ladder?', a:'To reach the high notes!' },
+  { cat:'school', q:'What do you call a school bus that\'s on fire?', a:'A school inferno!' },
+  { cat:'school', q:'Why couldn\'t the angle get a loan?', a:'Because its parents wouldn\'t cosine!' },
+  { cat:'school', q:'What did the pen say to the pencil?', a:'What\'s your point?' },
+  { cat:'school', q:'Why did the rubber get detention?', a:'Because it made too many mistakes!' },
+  { cat:'school', q:'What\'s a pirate\'s favourite letter?', a:'You\'d think it\'s R, but it\'s the C!' },
+  { cat:'school', q:'Why did the school clock get in trouble?', a:'Because it tocked too much!' },
+  { cat:'school', q:'What do you get when you cross a teacher with a vampire?', a:'Lots of blood tests!' },
+  { cat:'school', q:'Why did the nose not make it to school?', a:'Because it got picked!' },
+  { cat:'school', q:'What\'s a blackboard\'s favourite drink?', a:'Hot chalk-olate!' },
+  { cat:'school', q:'Why did the PE teacher go to jail?', a:'Because he held up the gym!' },
+  { cat:'school', q:'What do you call a school of fish taking a test?', a:'A school of cod exams!' },
+  { cat:'school', q:'Why did the skeleton go to school alone?', a:'Because he had no body to go with!' },
+  { cat:'school', q:'What\'s a king\'s favourite subject?', a:'Reign-ding!' },
+  { cat:'school', q:'Why did the report card go to the doctor?', a:'Because it had too many C\'s!' },
+  { cat:'school', q:'What do you call a book that\'s always cold?', a:'A brrrr-ary book!' },
+  { cat:'school', q:'Why did the calculator break up with the maths book?', a:'Because it had too many problems!' },
+  { cat:'school', q:'What\'s an astronaut\'s favourite key on a keyboard?', a:'The space bar!' },
+  { cat:'school', q:'Why did the egg get thrown out of class?', a:'Because it kept telling yolks!' },
+  { cat:'school', q:'What do you call a teacher with no arms or legs?', a:'Matt!' },
+  { cat:'school', q:'Why did the pupil bring scissors to school?', a:'He wanted to cut class!' },
+  { cat:'school', q:'What\'s a tree\'s favourite subject?', a:'Geome-tree!' },
+  { cat:'school', q:'Why did the art teacher go to prison?', a:'Because she drew a weapon!' },
+  { cat:'school', q:'What do you call a computer that sings?', a:'A-Dell!' },
+  { cat:'school', q:'Why was the equal sign so humble?', a:'Because it wasn\'t greater than or less than anyone!' },
+  { cat:'school', q:'What\'s a maths teacher\'s favourite place in New York?', a:'Times Square!' },
+  { cat:'school', q:'Why did the globe spin around?', a:'Because it wanted to get around!' },
+  { cat:'school', q:'What do you call an English teacher who can\'t spell?', a:'A misteak!' },
+  { cat:'school', q:'Why did the textbook look so smart?', a:'Because it was full of knowledge!' },
+  { cat:'school', q:'What\'s a ghost\'s favourite subject?', a:'Boo-ology!' },
+  { cat:'school', q:'Why did the ruler feel so important?', a:'Because everyone looked up to it for measurements!' },
+  { cat:'school', q:'What do you call a boring dinosaur?', a:'A dino-snore!' },
+  { cat:'school', q:'Why did the library book go to the hospital?', a:'Because it needed to be checked out!' },
+  { cat:'school', q:'What\'s a scientist\'s favourite dog?', a:'A Lab!' },
+  { cat:'school', q:'Why did the homework cry?', a:'Because it had too many problems to deal with!' },
+  { cat:'school', q:'What do you call a fish who won\'t share its crayons?', a:'Shellfish!' },
+  { cat:'school', q:'Why did the comma break up with the apostrophe?', a:'Because it was too possessive!' },
+  { cat:'school', q:'What\'s a bird\'s favourite subject?', a:'Owl-gebra!' },
+  { cat:'school', q:'Why did the student bring a mirror to the exam?', a:'For some self-reflection!' },
+  { cat:'school', q:'What do you call a pen that can sing?', a:'An ink-redible performer!' },
+  { cat:'school', q:'Why did the fraction worry about the decimal?', a:'Because the decimal had more points!' },
+  { cat:'school', q:'What\'s a cat\'s favourite class?', a:'Meow-sic!' },
+  { cat:'science', q:'Why can\'t you trust atoms?', a:'Because they make up everything!' },
+  { cat:'science', q:'What did one magnet say to the other?', a:'I find you very attractive!' },
+  { cat:'science', q:'Why did the biologist break up with the physicist?', a:'Because there was no chemistry!' },
+  { cat:'science', q:'What do you call a microbe that\'s good at maths?', a:'A protract-eria!' },
+  { cat:'science', q:'Why did the sun go to school?', a:'To get a bit brighter!' },
+  { cat:'science', q:'What\'s a chemist\'s favourite type of tree?', a:'A chemis-tree!' },
+  { cat:'science', q:'Why did the electron get a ticket?', a:'Because it was caught speeding!' },
+  { cat:'science', q:'What do planets like to read?', a:'Comet books!' },
+  { cat:'science', q:'Why is the moon so broke?', a:'Because it\'s down to its last quarter!' },
+  { cat:'science', q:'What did the volcano say to the mountain?', a:'I lava you!' },
+  { cat:'science', q:'Why did the germ cross the microscope?', a:'To get to the other slide!' },
+  { cat:'science', q:'What\'s a light year?', a:'The same as a regular year, but with fewer calories!' },
+  { cat:'science', q:'Why did oxygen go on a date with potassium?', a:'Because it was OK!' },
+  { cat:'science', q:'What do you call a tooth in a glass of water?', a:'A one molar solution!' },
+  { cat:'science', q:'Why did the physics teacher break up with the biology teacher?', a:'There was no chemistry between them!' },
+  { cat:'science', q:'What did the scientist say when they found 2 isotopes of helium?', a:'HeHe!' },
+  { cat:'science', q:'Why did the robot go on holiday?', a:'To recharge its batteries!' },
+  { cat:'science', q:'What\'s a skeleton\'s least favourite room?', a:'The living room!' },
+  { cat:'science', q:'Why did the amoeba flunk the maths test?', a:'Because it multiplied by dividing!' },
+  { cat:'science', q:'What do you call an educated tube?', a:'A graduated cylinder!' },
+  { cat:'science', q:'Why is the periodic table so good?', a:'Because it\'s in its element!' },
+  { cat:'science', q:'What did Mars say to Saturn?', a:'Give me a ring sometime!' },
+  { cat:'science', q:'Why did the cell go to therapy?', a:'Because it had too much stress!' },
+  { cat:'science', q:'What\'s a chemist\'s favourite kind of dog?', a:'A Lab!' },
+  { cat:'science', q:'Why did the photon refuse to check luggage?', a:'Because it was travelling light!' },
+  { cat:'science', q:'What did the DNA say to the other DNA?', a:'Do these genes make me look fat?' },
+  { cat:'science', q:'Why did the noble gas cry?', a:'Because all its friends argon!' },
+  { cat:'science', q:'What\'s a robot\'s favourite type of music?', a:'Heavy metal!' },
+  { cat:'science', q:'Why did the asteroid break up with the comet?', a:'The relationship was too rocky!' },
+  { cat:'science', q:'What did the thermometer say to the graduated cylinder?', a:'You may have graduated but I have more degrees!' },
+  { cat:'science', q:'Why did the neutron go to jail?', a:'Because it was charged with assault!' },
+  { cat:'science', q:'What\'s an astronaut\'s favourite part of a computer?', a:'The space bar!' },
+  { cat:'science', q:'Why did the plant go to the doctor?', a:'Because it was looking a bit green!' },
+  { cat:'science', q:'What do you call a clown in prison?', a:'A silicon!' },
+  { cat:'science', q:'Why did the electricity break up with the magnet?', a:'Because the relationship had no spark!' },
+  { cat:'science', q:'What\'s a physicist\'s favourite food?', a:'Fission chips!' },
+  { cat:'science', q:'Why did the geologist break up with their partner?', a:'They took them for granite!' },
+  { cat:'science', q:'What did one tectonic plate say when it bumped into another?', a:'Sorry, my fault!' },
+  { cat:'science', q:'Why did the acid go to the gym?', a:'To become a buffer solution!' },
+  { cat:'science', q:'What\'s a computer\'s favourite snack?', a:'Microchips!' },
+  { cat:'science', q:'Why did the scientist install a knocker on the door?', a:'They wanted to win the No-bell prize!' },
+  { cat:'science', q:'What do you call a fish made of two sodium atoms?', a:'2 Na!' },
+  { cat:'science', q:'Why did the mitochondria win the race?', a:'Because it was the powerhouse of the cell!' },
+  { cat:'science', q:'What\'s a black hole\'s favourite game?', a:'Swallow the leader!' },
+  { cat:'science', q:'Why did the beaker feel empty?', a:'Because it had no solution!' },
+  { cat:'science', q:'What do you call a snake that\'s good at chemistry?', a:'A copperhead!' },
+  { cat:'science', q:'Why did the proton blush?', a:'Because it was positively embarrassed!' },
+  { cat:'science', q:'What\'s a microbiologist\'s favourite pub?', a:'The Petri Dish!' },
+  { cat:'science', q:'Why did the mathematician cross the road?', a:'To get to the same side!' },
+  { cat:'science', q:'What did the blood cell say when it bumped into the wall?', a:'Clot!' },
+  { cat:'sport', q:'Why did the golfer bring two pairs of trousers?', a:'In case he got a hole in one!' },
+  { cat:'sport', q:'Why do football pitches always get wet?', a:'Because the players are always dribbling!' },
+  { cat:'sport', q:'Why did the tennis player bring a ladder?', a:'To reach the net!' },
+  { cat:'sport', q:'What do you call a pig who plays basketball?', a:'A ball hog!' },
+  { cat:'sport', q:'Why did the cricket team go to the bank?', a:'To get their bowler!' },
+  { cat:'sport', q:'What\'s a boxer\'s favourite drink?', a:'Punch!' },
+  { cat:'sport', q:'Why did the bicycle fall over?', a:'Because it was two-tired!' },
+  { cat:'sport', q:'What do you call a referee who works at a bakery?', a:'A bread judge!' },
+  { cat:'sport', q:'Why did the rugby ball go to the doctor?', a:'Because it was feeling flat!' },
+  { cat:'sport', q:'What\'s a ghost\'s favourite sport?', a:'Boo-ling!' },
+  { cat:'sport', q:'Why did the football manager bring string to the game?', a:'So he could tie the score!' },
+  { cat:'sport', q:'What do you call a boomerang that doesn\'t come back?', a:'A stick!' },
+  { cat:'sport', q:'Why did the athlete bring a bar of soap?', a:'For a clean sweep!' },
+  { cat:'sport', q:'What\'s a tennis player\'s favourite city?', a:'Volley-wood!' },
+  { cat:'sport', q:'Why did the snooker player go to the dentist?', a:'To get a new cue-spid!' },
+  { cat:'sport', q:'What do you call a cricket match in the rain?', a:'A drizzle of runs!' },
+  { cat:'sport', q:'Why did the runner join the orchestra?', a:'Because they had great timing!' },
+  { cat:'sport', q:'What\'s a baseball player\'s favourite animal?', a:'A bat!' },
+  { cat:'sport', q:'Why did the swimmer bring a towel?', a:'Because they were going to get soaked anyway!' },
+  { cat:'sport', q:'What do you call a lazy kangaroo at the Olympics?', a:'A pouch potato!' },
+  { cat:'sport', q:'Why did the gym close down?', a:'Because it didn\'t work out!' },
+  { cat:'sport', q:'What\'s a footballer\'s favourite tea?', a:'Penal-tea!' },
+  { cat:'sport', q:'Why did the horse go to the stable?', a:'To wait for a stable career!' },
+  { cat:'sport', q:'What do you call a dinosaur that\'s good at cricket?', a:'A dino-score!' },
+  { cat:'sport', q:'Why did the basketball player bring a ladder?', a:'To reach new heights!' },
+  { cat:'sport', q:'What\'s a surfer\'s favourite kind of tea?', a:'Break-fast!' },
+  { cat:'sport', q:'Why did the darts player go to school?', a:'To get straight to the point!' },
+  { cat:'sport', q:'What do you call a snowman who plays football?', a:'A cool striker!' },
+  { cat:'sport', q:'Why did the skateboarder fail the exam?', a:'Because they kept flipping out!' },
+  { cat:'sport', q:'What\'s a badminton player\'s favourite meal?', a:'Shuttlecock soup!' },
+  { cat:'sport', q:'Why did the marathon runner bring string?', a:'To tie up loose ends!' },
+  { cat:'sport', q:'What do you call a fish playing rugby?', a:'A try-out!' },
+  { cat:'sport', q:'Why did the archer do well in school?', a:'Because they always hit the target!' },
+  { cat:'sport', q:'What\'s a fencer\'s favourite type of party?', a:'A parry!' },
+  { cat:'sport', q:'Why did the jockey bring a map?', a:'To stay on course!' },
+  { cat:'sport', q:'What do you call a hockey player with bad breath?', a:'Puck-face!' },
+  { cat:'sport', q:'Why did the pole vaulter break up?', a:'They set the bar too high!' },
+  { cat:'sport', q:'What\'s a gymnast\'s favourite pudding?', a:'Tumble tart!' },
+  { cat:'sport', q:'Why did the weightlifter eat light bulbs?', a:'They wanted a light meal!' },
+  { cat:'sport', q:'What do you call a skier on a rollercoaster?', a:'A downhill thrill!' },
+  { cat:'sport', q:'Why did the rowing team get lost?', a:'They were up the creek without a paddle!' },
+  { cat:'sport', q:'What\'s a wrestler\'s favourite season?', a:'Fall!' },
+  { cat:'sport', q:'Why did the volleyball player go to the bank?', a:'To spike their savings!' },
+  { cat:'sport', q:'What do you call a penguin who plays netball?', a:'A cool shooter!' },
+  { cat:'sport', q:'Why did the table tennis player get arrested?', a:'For serving illegally!' },
+  { cat:'sport', q:'What\'s a race car driver\'s favourite meal?', a:'Fast food!' },
+  { cat:'sport', q:'Why did the shot-putter fail music?', a:'They couldn\'t handle the throw!' },
+  { cat:'sport', q:'What do you call a sprinter who\'s always late?', a:'A running joke!' },
+  { cat:'sport', q:'Why did the goalkeeper bring a broom?', a:'For a clean sheet!' },
+  { cat:'sport', q:'What\'s a rock climber\'s favourite sweet?', a:'Cliff bars!' },
+  { cat:'music', q:'Why did the piano go to therapy?', a:'Because it had too many hang-ups!' },
+  { cat:'music', q:'What\'s a skeleton\'s favourite instrument?', a:'The trom-bone!' },
+  { cat:'music', q:'Why did the musician get arrested?', a:'For getting into treble!' },
+  { cat:'music', q:'What do you call a cow that plays guitar?', a:'A moo-sician!' },
+  { cat:'music', q:'Why did the guitar teacher get sacked?', a:'For fingering A minor!' },
+  { cat:'music', q:'What\'s a cat\'s favourite song?', a:'Three Blind Mice!' },
+  { cat:'music', q:'Why did the drum take a nap?', a:'Because it was beat!' },
+  { cat:'music', q:'What do you call a musical insect?', a:'A hum-bug!' },
+  { cat:'music', q:'Why did the conductor go to jail?', a:'Because he orchestrated a crime!' },
+  { cat:'music', q:'What\'s a ghost\'s favourite instrument?', a:'The spook-ulele!' },
+  { cat:'music', q:'Why did the singer climb a ladder?', a:'To reach the high notes!' },
+  { cat:'music', q:'What do you call a fish that plays violin?', a:'A fin-strumentalist!' },
+  { cat:'music', q:'Why did the music note go to the doctor?', a:'Because it was feeling flat!' },
+  { cat:'music', q:'What\'s a pirate\'s favourite instrument?', a:'The guit-arrr!' },
+  { cat:'music', q:'Why did the triangle feel left out?', a:'Because it was never in-volved!' },
+  { cat:'music', q:'What do you call a bee in a band?', a:'A hum-drummer!' },
+  { cat:'music', q:'Why did the violin go to the shop?', a:'To get new strings attached!' },
+  { cat:'music', q:'What\'s a balloon\'s favourite music?', a:'Pop!' },
+  { cat:'music', q:'Why did the bass player get lost?', a:'Because they couldn\'t find the right key!' },
+  { cat:'music', q:'What do you call a sleeping trumpet?', a:'A brass-napper!' },
+  { cat:'music', q:'Why did the choir get food poisoning?', a:'Because they ate the chords!' },
+  { cat:'music', q:'What\'s a tree\'s favourite type of music?', a:'Bark-oque!' },
+  { cat:'music', q:'Why did the DJ bring a ladder?', a:'To reach the top of the charts!' },
+  { cat:'music', q:'What do you call a musical snake?', a:'A rock \'n\' roller!' },
+  { cat:'music', q:'Why did the harp break up with the guitar?', a:'Too many strings attached!' },
+  { cat:'music', q:'What\'s a computer\'s favourite music?', a:'Disk-o!' },
+  { cat:'music', q:'Why did the accordion player wear glasses?', a:'To C sharp!' },
+  { cat:'music', q:'What do you call a musical snowman?', a:'A cool jazz player!' },
+  { cat:'music', q:'Why did the music teacher go to the beach?', a:'To catch some waves!' },
+  { cat:'music', q:'What\'s a rabbit\'s favourite music?', a:'Hip-hop!' },
+  { cat:'music', q:'Why did the flute break up with the clarinet?', a:'Because it was too reedy!' },
+  { cat:'music', q:'What do you call a laughing piano?', a:'A Yamaha-ha-ha!' },
+  { cat:'music', q:'Why did the bagpipes go to Scotland?', a:'To get some highland flings!' },
+  { cat:'music', q:'What\'s a frog\'s favourite type of music?', a:'Hip-hop!' },
+  { cat:'music', q:'Why did the xylophone win the contest?', a:'Because it struck the right notes!' },
+  { cat:'music', q:'What do you call a duck that plays the drums?', a:'A quack beat!' },
+  { cat:'music', q:'Why did the saxophone take a bath?', a:'To jazz things up!' },
+  { cat:'music', q:'What\'s a sheep\'s favourite music?', a:'Baa-rock!' },
+  { cat:'music', q:'Why did the composer go broke?', a:'Because they only had notes!' },
+  { cat:'music', q:'What do you call a musical dog?', a:'A bark-estra conductor!' },
+  { cat:'music', q:'Why did the cymbal get detention?', a:'For crashing into class!' },
+  { cat:'music', q:'What\'s an egg\'s favourite type of music?', a:'Yolk music!' },
+  { cat:'music', q:'Why did the recorder feel lonely?', a:'Because no one wanted to play with it!' },
+  { cat:'music', q:'What do you call a musical horse?', a:'A neigh-sayer!' },
+  { cat:'music', q:'Why did the band practice in the freezer?', a:'To play some cool jazz!' },
+  { cat:'music', q:'What\'s a witch\'s favourite instrument?', a:'The boo-zooki!' },
+  { cat:'music', q:'Why did the opera singer go to the doctor?', a:'Because she had high C-fever!' },
+  { cat:'music', q:'What do you call a musical potato?', a:'A chip-tune!' },
+  { cat:'music', q:'Why did the metronome get tired?', a:'Because it was always ticking!' },
+  { cat:'music', q:'What\'s a car\'s favourite type of music?', a:'Car-tune!' },
+  { cat:'nature', q:'Why did the leaf go to the doctor?', a:'Because it was feeling green!' },
+  { cat:'nature', q:'What do you call a tree that can fit in your hand?', a:'A palm tree!' },
+  { cat:'nature', q:'Why did the river never finish its sentence?', a:'Because it kept meandering!' },
+  { cat:'nature', q:'What\'s a mountain\'s favourite type of sweet?', a:'Rock candy!' },
+  { cat:'nature', q:'Why did the cloud break up with the fog?', a:'Because it was too misty-erious!' },
+  { cat:'nature', q:'What do you call a rainy day at school?', a:'A brainshower!' },
+  { cat:'nature', q:'Why did the sun go to school?', a:'To get a little brighter!' },
+  { cat:'nature', q:'What\'s a flower\'s favourite drink?', a:'Root beer!' },
+  { cat:'nature', q:'Why did the wind break up with the rain?', a:'Because it was too draining!' },
+  { cat:'nature', q:'What do you call a lazy flower?', a:'A bud potato!' },
+  { cat:'nature', q:'Why did the ocean break up with the pond?', a:'Because the pond was too shallow!' },
+  { cat:'nature', q:'What\'s a rock\'s favourite music?', a:'Rock \'n\' roll!' },
+  { cat:'nature', q:'Why did the forest feel empty?', a:'Because everyone had left!' },
+  { cat:'nature', q:'What do you call a funny volcano?', a:'Hill-arious!' },
+  { cat:'nature', q:'Why did the snowman look through the carrots?', a:'He was picking his nose!' },
+  { cat:'nature', q:'What\'s a tornado\'s favourite game?', a:'Twister!' },
+  { cat:'nature', q:'Why did the grass get a promotion?', a:'Because it was outstanding in its field!' },
+  { cat:'nature', q:'What do you call a frozen lawn?', a:'An ice field!' },
+  { cat:'nature', q:'Why did the rainbow go to therapy?', a:'Because it had too many colours of emotion!' },
+  { cat:'nature', q:'What\'s a tree\'s favourite dating app?', a:'Timber!' },
+  { cat:'nature', q:'Why did the canyon feel depressed?', a:'Because it had too many lows!' },
+  { cat:'nature', q:'What do you call a wet bear?', a:'A drizzly bear!' },
+  { cat:'nature', q:'Why did the desert get invited to parties?', a:'Because it was so hot!' },
+  { cat:'nature', q:'What\'s a lightning bolt\'s favourite game?', a:'Flash cards!' },
+  { cat:'nature', q:'Why did the lake feel self-conscious?', a:'Because everyone saw right through it!' },
+  { cat:'nature', q:'What do you call a musical tree?', a:'A pop-lar!' },
+  { cat:'nature', q:'Why did the earthquake break up?', a:'Because the relationship was too shaky!' },
+  { cat:'nature', q:'What\'s a beach\'s favourite sport?', a:'Surf and turf!' },
+  { cat:'nature', q:'Why did the waterfall get in trouble?', a:'For dropping everything!' },
+  { cat:'nature', q:'What do you call a talkative flower?', a:'A tulip!' },
+  { cat:'nature', q:'Why did the hail get detention?', a:'For pelting everyone!' },
+  { cat:'nature', q:'What\'s a mushroom\'s favourite party trick?', a:'Being a fungi!' },
+  { cat:'nature', q:'Why did the glacier move so slowly?', a:'Because it was too cool to rush!' },
+  { cat:'nature', q:'What do you call a scared pebble?', a:'A little boulder!' },
+  { cat:'nature', q:'Why did the thunderstorm get arrested?', a:'For shocking behaviour!' },
+  { cat:'nature', q:'What\'s a gardener\'s favourite type of trousers?', a:'Ones with turnips!' },
+  { cat:'nature', q:'Why did the flower do well in school?', a:'Because it was budding with potential!' },
+  { cat:'nature', q:'What do you call a lazy brook?', a:'A still stream!' },
+  { cat:'nature', q:'Why did the hurricane get a job?', a:'Because it wanted to make a big impact!' },
+  { cat:'nature', q:'What\'s a bush\'s favourite type of maths?', a:'Hedge-bra!' },
+  { cat:'nature', q:'Why did the frost stay home?', a:'Because it was feeling a bit nip-py!' },
+  { cat:'nature', q:'What do you call a well-dressed weed?', a:'A dande-lion!' },
+  { cat:'nature', q:'Why did the meadow break up with the valley?', a:'Because the valley was too low!' },
+  { cat:'nature', q:'What\'s a thundercloud\'s favourite snack?', a:'Thunder bars!' },
+  { cat:'nature', q:'Why did the stone feel ordinary?', a:'Because it was just a plain rock!' },
+  { cat:'nature', q:'What do you call a flower that runs?', a:'A rose that sprints!' },
+  { cat:'nature', q:'Why did the weather report get embarrassed?', a:'Because it got the forecast wrong!' },
+  { cat:'nature', q:'What\'s an acorn\'s favourite subject?', a:'Tree-gonometry!' },
+  { cat:'nature', q:'Why did the puddle feel important?', a:'Because it reflected everything!' },
+  { cat:'nature', q:'What do you call a happy shrub?', a:'A jolly holly!' },
+  { cat:'jobs', q:'Why did the scarecrow win an award?', a:'Because he was outstanding in his field!' },
+  { cat:'jobs', q:'Why did the baker work so hard?', a:'Because he needed the dough!' },
+  { cat:'jobs', q:'What do you call a dentist who doesn\'t like tea?', a:'Denis!' },
+  { cat:'jobs', q:'Why did the electrician close his shop?', a:'Because business was too shocking!' },
+  { cat:'jobs', q:'What\'s a plumber\'s favourite song?', a:'Let It Flow!' },
+  { cat:'jobs', q:'Why did the gardener plant light bulbs?', a:'Because he wanted a power plant!' },
+  { cat:'jobs', q:'What do you call a sleeping bull at work?', a:'A bull-dozer!' },
+  { cat:'jobs', q:'Why did the librarian get kicked out?', a:'Because she was too loud about being quiet!' },
+  { cat:'jobs', q:'What\'s a fireman\'s least favourite word?', a:'Fired!' },
+  { cat:'jobs', q:'Why did the carpenter break up?', a:'Because he couldn\'t handle the pressure!' },
+  { cat:'jobs', q:'What do you call a fake noodle chef?', a:'An impasta!' },
+  { cat:'jobs', q:'Why did the banker quit?', a:'Because he lost interest!' },
+  { cat:'jobs', q:'What\'s a butcher\'s favourite dance?', a:'The chop-chop!' },
+  { cat:'jobs', q:'Why did the tailor get promoted?', a:'Because he was sew good!' },
+  { cat:'jobs', q:'What do you call a lazy doctor?', a:'Dr. Snooze!' },
+  { cat:'jobs', q:'Why did the astronaut break up?', a:'Because he needed more space!' },
+  { cat:'jobs', q:'What\'s a hairdresser\'s favourite movie?', a:'Cutting Edge!' },
+  { cat:'jobs', q:'Why did the photographer go to jail?', a:'Because he shot someone and framed them!' },
+  { cat:'jobs', q:'What do you call a fish who works in medicine?', a:'A sturgeon!' },
+  { cat:'jobs', q:'Why did the postman get sacked?', a:'Because he couldn\'t deliver!' },
+  { cat:'jobs', q:'What\'s a locksmith\'s favourite type of key?', a:'A mon-key!' },
+  { cat:'jobs', q:'Why did the painter feel blue?', a:'Because he ran out of colours!' },
+  { cat:'jobs', q:'What do you call a pilot who\'s always complaining?', a:'A plane pain!' },
+  { cat:'jobs', q:'Why did the cleaner feel accomplished?', a:'Because they swept the competition!' },
+  { cat:'jobs', q:'What\'s a mechanic\'s favourite sweet?', a:'Car-amels!' },
+  { cat:'jobs', q:'Why did the chef get arrested?', a:'For beating the eggs and whipping the cream!' },
+  { cat:'jobs', q:'What do you call a nervous waiter?', a:'A shaky server!' },
+  { cat:'jobs', q:'Why did the journalist go to the beach?', a:'To catch some headlines!' },
+  { cat:'jobs', q:'What\'s a cobbler\'s favourite fruit?', a:'Pairs!' },
+  { cat:'jobs', q:'Why did the builder break up?', a:'Because the relationship wasn\'t concrete!' },
+  { cat:'jobs', q:'What do you call a sleeping security guard?', a:'A guarDREAM!' },
+  { cat:'jobs', q:'Why did the teacher wear sunglasses?', a:'Because her students were so bright!' },
+  { cat:'jobs', q:'What\'s an accountant\'s favourite snack?', a:'Number crunchers!' },
+  { cat:'jobs', q:'Why did the vet get confused?', a:'Because it was a cat-astrophe!' },
+  { cat:'jobs', q:'What do you call a farmer who counts sheep?', a:'An insomnia-cure!' },
+  { cat:'jobs', q:'Why did the lawyer wear a suit?', a:'To win the case!' },
+  { cat:'jobs', q:'What\'s a receptionist\'s favourite exercise?', a:'Call-isthenics!' },
+  { cat:'jobs', q:'Why did the bin man feel important?', a:'Because he was rubbish at everything else!' },
+  { cat:'jobs', q:'What do you call a dancing traffic warden?', a:'A metre man!' },
+  { cat:'jobs', q:'Why did the scientist feel ordinary?', a:'Because they weren\'t in their element!' },
+  { cat:'jobs', q:'What\'s a sailor\'s favourite letter?', a:'C!' },
+  { cat:'jobs', q:'Why did the estate agent break up?', a:'Because they couldn\'t close the deal!' },
+  { cat:'jobs', q:'What do you call a nervous surgeon?', a:'A shaky cutter!' },
+  { cat:'jobs', q:'Why did the bus driver get promoted?', a:'Because they were driving success!' },
+  { cat:'jobs', q:'What\'s a zookeeper\'s favourite game?', a:'Animal crossing!' },
+  { cat:'jobs', q:'Why did the florist feel flowery?', a:'Because business was blooming!' },
+  { cat:'jobs', q:'What do you call a singing window cleaner?', a:'A pane in the ear!' },
+  { cat:'jobs', q:'Why did the actor break a leg?', a:'For good luck!' },
+  { cat:'jobs', q:'What\'s a fishmonger\'s favourite exercise?', a:'Scales!' },
+  { cat:'jobs', q:'Why did the IT person get cold?', a:'Because they left the Windows open!' },
+  { cat:'wordplay', q:'What do you call a dinosaur with an extensive vocabulary?', a:'A thesaurus!' },
+  { cat:'wordplay', q:'Why did the bicycle fall over?', a:'Because it was two-tired!' },
+  { cat:'wordplay', q:'What do you call a can opener that doesn\'t work?', a:'A can\'t opener!' },
+  { cat:'wordplay', q:'Why don\'t scientists trust stairs?', a:'Because they\'re always up to something!' },
+  { cat:'wordplay', q:'What do you call a bear caught in the rain?', a:'A drizzly bear!' },
+  { cat:'wordplay', q:'Why did the picture go to jail?', a:'Because it was framed!' },
+  { cat:'wordplay', q:'What do you call a fake stone?', a:'A sham-rock!' },
+  { cat:'wordplay', q:'Why did the belt go to jail?', a:'For holding up trousers!' },
+  { cat:'wordplay', q:'What do you call a nosy pepper?', a:'Jalape\u00f1o business!' },
+  { cat:'wordplay', q:'Why did the invisible man turn down the job?', a:'Because he couldn\'t see himself doing it!' },
+  { cat:'wordplay', q:'What do you call a shoe made of a banana?', a:'A slipper!' },
+  { cat:'wordplay', q:'Why did the calendar feel popular?', a:'Because it had lots of dates!' },
+  { cat:'wordplay', q:'What do you call a fish without an eye?', a:'A fsh!' },
+  { cat:'wordplay', q:'Why did the envelope go to hospital?', a:'Because it had a paper cut!' },
+  { cat:'wordplay', q:'What do you call a lazy person in Japan?', a:'Japaneasy!' },
+  { cat:'wordplay', q:'Why did the maths book look so upset?', a:'Because it was full of problems!' },
+  { cat:'wordplay', q:'What do you call a sleeping bull?', a:'A bulldozer!' },
+  { cat:'wordplay', q:'Why did the golfer bring two pairs of trousers?', a:'In case he got a hole in one!' },
+  { cat:'wordplay', q:'What do you call an alligator in a waistcoat?', a:'An investigator!' },
+  { cat:'wordplay', q:'Why did the coffee file a police report?', a:'It got mugged!' },
+  { cat:'wordplay', q:'What do you call a very small mother?', a:'A mini-mum!' },
+  { cat:'wordplay', q:'Why did the skeleton go to the party alone?', a:'Because it had no body to go with!' },
+  { cat:'wordplay', q:'What do you call a snowman with a six-pack?', a:'An abdominal snowman!' },
+  { cat:'wordplay', q:'Why did the traffic light turn red?', a:'Because it was changing in the middle of the street!' },
+  { cat:'wordplay', q:'What do you call a pig that does karate?', a:'A pork chop!' },
+  { cat:'wordplay', q:'Why did the nose feel sad?', a:'Because it was always getting picked on!' },
+  { cat:'wordplay', q:'What do you call a dinosaur that crashes cars?', a:'Tyrannosaurus Wrecks!' },
+  { cat:'wordplay', q:'Why did the stadium get hot?', a:'Because all the fans left!' },
+  { cat:'wordplay', q:'What do you call a row of rabbits hopping away?', a:'A receding hare line!' },
+  { cat:'wordplay', q:'Why did the man put money in his freezer?', a:'He wanted cold hard cash!' },
+  { cat:'wordplay', q:'What do you call a train carrying bubblegum?', a:'A chew-chew train!' },
+  { cat:'wordplay', q:'Why did the phone wear glasses?', a:'Because it lost all its contacts!' },
+  { cat:'wordplay', q:'What do you call a group of disorganised cats?', a:'A cat-astrophe!' },
+  { cat:'wordplay', q:'Why did the man run around his bed?', a:'To catch up on his sleep!' },
+  { cat:'wordplay', q:'What do you call a magic dog?', a:'A Labracadabrador!' },
+  { cat:'wordplay', q:'Why did the broom get promoted?', a:'Because it swept the competition!' },
+  { cat:'wordplay', q:'What do you call a lazy skeleton?', a:'Bone idle!' },
+  { cat:'wordplay', q:'Why did the tree go to the dentist?', a:'To get a root canal!' },
+  { cat:'wordplay', q:'What do you call a chicken that counts its eggs?', a:'A mathema-chicken!' },
+  { cat:'wordplay', q:'Why did the lamp feel bright?', a:'Because it had a brilliant idea!' },
+  { cat:'wordplay', q:'What do you call a sleeping dinosaur?', a:'A dino-snore!' },
+  { cat:'wordplay', q:'Why did the wall go to the doctor?', a:'Because it had a crack!' },
+  { cat:'wordplay', q:'What do you call a nervous javelin thrower?', a:'Shakespeare!' },
+  { cat:'wordplay', q:'Why did the computer go to the doctor?', a:'Because it had a virus!' },
+  { cat:'wordplay', q:'What do you call a boomerang that won\'t come back?', a:'A stick!' },
+  { cat:'wordplay', q:'Why did the egg get thrown out of class?', a:'For telling too many yolks!' },
+  { cat:'wordplay', q:'What do you call a pile of cats?', a:'A meow-ntain!' },
+  { cat:'wordplay', q:'Why did the mirror feel reflective?', a:'Because it saw itself in everything!' },
+  { cat:'wordplay', q:'What do you call a belt made of watches?', a:'A waist of time!' },
+  { cat:'wordplay', q:'Why did the keyboard feel connected?', a:'Because it had all the right keys!' },
+  { cat:'silly', q:'What do you get if you cross a snowman with a vampire?', a:'Frostbite!' },
+  { cat:'silly', q:'Why did the teddy bear say no to pudding?', a:'Because she was already stuffed!' },
+  { cat:'silly', q:'What do you call a man with a rubber toe?', a:'Roberto!' },
+  { cat:'silly', q:'Why do we never tell secrets on a farm?', a:'Because the potatoes have eyes and the corn has ears!' },
+  { cat:'silly', q:'What do you call a man with a spade on his head?', a:'Doug!' },
+  { cat:'silly', q:'Why did the toilet paper roll down the hill?', a:'To get to the bottom!' },
+  { cat:'silly', q:'What do you call a man without a spade on his head?', a:'Douglas!' },
+  { cat:'silly', q:'Why did the banana go to the doctor?', a:'Because it wasn\'t peeling well!' },
+  { cat:'silly', q:'What do you call a woman standing on a tennis court?', a:'Annette!' },
+  { cat:'silly', q:'Why don\'t skeletons fight each other?', a:'Because they don\'t have the guts!' },
+  { cat:'silly', q:'What do you call a man lying in front of your door?', a:'Matt!' },
+  { cat:'silly', q:'Why did the kid throw butter out the window?', a:'To see a butterfly!' },
+  { cat:'silly', q:'What do you call a woman with one leg shorter than the other?', a:'Eileen!' },
+  { cat:'silly', q:'Why did the teddy bear turn down cake?', a:'Because it was stuffed!' },
+  { cat:'silly', q:'What do you call a man floating in the sea?', a:'Bob!' },
+  { cat:'silly', q:'Why did the student throw a clock out the window?', a:'To see time fly!' },
+  { cat:'silly', q:'What do you call a man in a pile of leaves?', a:'Russell!' },
+  { cat:'silly', q:'Why did the girl bring a ladder to school?', a:'Because she wanted to go to high school!' },
+  { cat:'silly', q:'What do you call a man hanging on the wall?', a:'Art!' },
+  { cat:'silly', q:'Why did the robber take a bath?', a:'To make a clean getaway!' },
+  { cat:'silly', q:'What do you call a man in a letterbox?', a:'Bill!' },
+  { cat:'silly', q:'Why did the boy bring a ladder to the bar?', a:'Because the drinks were on the house!' },
+  { cat:'silly', q:'What do you call a man holding a car above his head?', a:'Jack!' },
+  { cat:'silly', q:'Why did the boy sit on a clock?', a:'To be on time!' },
+  { cat:'silly', q:'What do you call a man in a paper bag?', a:'Russell!' },
+  { cat:'silly', q:'Why did the man put his money in the blender?', a:'He wanted to make some liquid assets!' },
+  { cat:'silly', q:'What do you call a man in a tree with a briefcase?', a:'A branch manager!' },
+  { cat:'silly', q:'Why did the chicken go to Nando\'s?', a:'To see a chicken strip!' },
+  { cat:'silly', q:'What do you call a woman on a barbecue?', a:'Barbie!' },
+  { cat:'silly', q:'Why don\'t eggs tell jokes?', a:'Because they might crack up!' },
+  { cat:'silly', q:'What do you call a man with a seagull on his head?', a:'Cliff!' },
+  { cat:'silly', q:'Why did the boy put a torch under his pillow?', a:'Because he wanted to have a light sleep!' },
+  { cat:'silly', q:'What do you call a woman standing between two houses?', a:'Allie!' },
+  { cat:'silly', q:'Why did the banana wear sun cream?', a:'Because it was afraid of peeling!' },
+  { cat:'silly', q:'What do you call a man in a jumper?', a:'Whatever his name is!' },
+  { cat:'silly', q:'Why did the tomato go red?', a:'Because it saw the salad dressing!' },
+  { cat:'silly', q:'What do you call a dog that does magic?', a:'A Labracadabrador!' },
+  { cat:'silly', q:'Why did the music teacher go to jail?', a:'Because she got caught with too many notes!' },
+  { cat:'silly', q:'What do you call a pig that does karate?', a:'A pork chop!' },
+  { cat:'silly', q:'Why did the boy throw his watch out of the window?', a:'He wanted to see time fly!' },
+  { cat:'silly', q:'What do you call a shoe made of a banana?', a:'A slipper!' },
+  { cat:'silly', q:'Why did the duck get arrested?', a:'For selling quack!' },
+  { cat:'silly', q:'What do you call a blind dinosaur?', a:'A do-you-think-he-saw-us!' },
+  { cat:'silly', q:'Why did the man bring toilet paper to the party?', a:'Because he was a party pooper!' },
+  { cat:'silly', q:'What do you call a sausage wearing armour?', a:'A banger in a tank!' },
+  { cat:'silly', q:'Why did the octopus blush?', a:'Because it saw the ocean\'s bottom!' },
+  { cat:'silly', q:'What do you call a fairy that doesn\'t take baths?', a:'Stinker Bell!' },
+  { cat:'silly', q:'Why did the chewing gum cross the road?', a:'Because it was stuck to the chicken\'s foot!' },
+  { cat:'silly', q:'What do you call a fish with no eyes?', a:'A fsh!' },
+  { cat:'silly', q:'Why did the lemon go to hospital?', a:'Because it wasn\'t peeling well!' },
+];
+
 /* ========================= game logic ========================= */
 const gate=document.getElementById('gate'), stage=document.getElementById('stage');
 const badge=document.getElementById('badge'), optA=document.getElementById('optA'), optB=document.getElementById('optB');
@@ -504,8 +1057,20 @@ const topHalf=document.getElementById('topHalf'), bottomHalf=document.getElement
 const orBadge=document.getElementById('orBadge'), cueText=document.getElementById('cueText');
 const tierPicker=document.getElementById('tierPicker'), about=document.getElementById('about');
 
+// Dad Jokes elements
+const jokeStage=document.getElementById('jokeStage');
+const jokeBadge=document.getElementById('jokeBadge'), jokeQ=document.getElementById('jokeQ'), jokeA=document.getElementById('jokeA');
+const jokeTopHalf=document.getElementById('jokeTopHalf'), jokeBottomHalf=document.getElementById('jokeBottomHalf');
+const jokeDivider=document.getElementById('jokeDivider'), jokeCueText=document.getElementById('jokeCueText');
+const jokeTierPicker=document.getElementById('jokeTierPicker');
+const modeDesc=document.getElementById('modeDesc');
+
+// Game mode: 'wyr' or 'dadjokes'
+let gameMode='wyr';
+
 const active = new Set(Object.keys(CATEGORIES));
-let deck=[], motionReady=false, busy=false;
+const jokeActive = new Set(Object.keys(DAD_JOKES_CATEGORIES));
+let deck=[], jokeDeck=[], motionReady=false, busy=false;
 
 for(const [key,c] of Object.entries(CATEGORIES)){
   const chip=document.createElement('button');
@@ -518,9 +1083,42 @@ for(const [key,c] of Object.entries(CATEGORIES)){
   tierPicker.appendChild(chip);
 }
 
+// Dad Jokes tier picker
+for(const [key,c] of Object.entries(DAD_JOKES_CATEGORIES)){
+  const chip=document.createElement('button');
+  chip.className='chip'; chip.type='button'; chip.setAttribute('aria-pressed','true');
+  chip.style.background=c.a; chip.innerHTML='<span class="swatch"></span>'+c.label;
+  chip.addEventListener('click',()=>{
+    if(jokeActive.has(key)){ if(jokeActive.size===1) return; jokeActive.delete(key); chip.setAttribute('aria-pressed','false'); }
+    else { jokeActive.add(key); chip.setAttribute('aria-pressed','true'); }
+  });
+  jokeTierPicker.appendChild(chip);
+}
+
+// Mode switching
+const modeWYR=document.getElementById('modeWYR'), modeDJ=document.getElementById('modeDJ');
+function setMode(mode){
+  gameMode=mode;
+  if(mode==='wyr'){
+    modeWYR.classList.add('active'); modeDJ.classList.remove('active');
+    tierPicker.classList.remove('hidden'); jokeTierPicker.classList.add('hidden');
+    modeDesc.textContent='Before every meeting, shake for a would-you-rather scenario. One question, no right answer—just a moment to think differently and discuss openly with your team.';
+  } else {
+    modeDJ.classList.add('active'); modeWYR.classList.remove('active');
+    jokeTierPicker.classList.remove('hidden'); tierPicker.classList.add('hidden');
+    modeDesc.textContent='Shake for a groan-worthy dad joke. Read the question aloud, pause for dramatic effect, then reveal the punchline. Perfect for lightening the mood!';
+  }
+}
+modeWYR.addEventListener('click',()=>setMode('wyr'));
+modeDJ.addEventListener('click',()=>setMode('dadjokes'));
+
 function reshuffle(){
   deck = QUESTIONS.map((q,i)=>i).filter(i=>active.has(QUESTIONS[i].cat));
   for(let i=deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; }
+}
+function reshuffleJokes(){
+  jokeDeck = DAD_JOKES.map((q,i)=>i).filter(i=>jokeActive.has(DAD_JOKES[i].cat));
+  for(let i=jokeDeck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [jokeDeck[i],jokeDeck[j]]=[jokeDeck[j],jokeDeck[i]]; }
 }
 let currentCat=null;
 function nextQuestion(){
@@ -539,6 +1137,23 @@ function nextQuestion(){
   if(typeof trackStat==='function') trackStat('question',{category:q.cat});
   setTimeout(()=>{ busy=false; },450);
 }
+function nextJoke(){
+  if(busy) return; busy=true;
+  if(jokeDeck.length===0) reshuffleJokes();
+  const j=DAD_JOKES[jokeDeck.pop()], c=DAD_JOKES_CATEGORIES[j.cat];
+  currentCat=j.cat;
+  document.documentElement.style.setProperty('--a',c.a);
+  document.documentElement.style.setProperty('--b',c.b);
+  document.querySelector('meta[name=theme-color]').setAttribute('content',c.b);
+  jokeBadge.textContent=c.label; jokeQ.textContent=j.q; jokeA.textContent=j.a;
+  jokeTopHalf.classList.remove('enter'); jokeBottomHalf.classList.remove('enter'); jokeDivider.classList.remove('pop');
+  void jokeTopHalf.offsetWidth;
+  jokeTopHalf.classList.add('enter'); jokeBottomHalf.classList.add('enter'); jokeDivider.classList.add('pop');
+  if(navigator.vibrate) navigator.vibrate(35);
+  if(typeof trackStat==='function') trackStat('joke',{category:j.cat});
+  setTimeout(()=>{ busy=false; },450);
+}
+function nextItem(){ if(gameMode==='wyr') nextQuestion(); else nextJoke(); }
 
 let lx,ly,lz,lastShake=0,shakeCount=0,shakeTimeout=null;
 const THRESHOLD=16, SHAKE_COOLDOWN=150, SHAKE_REQUIRED=2, SHAKE_WINDOW=1500;
@@ -550,22 +1165,37 @@ function onMotion(e){
       lastShake=now; shakeCount++;
       if(shakeTimeout) clearTimeout(shakeTimeout);
       shakeTimeout=setTimeout(()=>{ shakeCount=0; }, SHAKE_WINDOW);
-      if(shakeCount>=SHAKE_REQUIRED){ shakeCount=0; clearTimeout(shakeTimeout); nextQuestion(); }
+      if(shakeCount>=SHAKE_REQUIRED){ shakeCount=0; clearTimeout(shakeTimeout); nextItem(); }
     }
   }
   lx=x; ly=y; lz=z;
 }
-function startGame(){ gate.classList.add('hidden'); stage.classList.remove('hidden'); reshuffle(); nextQuestion(); if(typeof trackStat==='function') trackStat('session'); if(typeof sessionStart!=='undefined') sessionStart=Date.now(); }
+function startGame(){
+  gate.classList.add('hidden');
+  if(gameMode==='wyr'){
+    stage.classList.remove('hidden'); jokeStage.classList.add('hidden');
+    reshuffle(); nextQuestion();
+  } else {
+    jokeStage.classList.remove('hidden'); stage.classList.add('hidden');
+    reshuffleJokes(); nextJoke();
+  }
+  if(typeof trackStat==='function') trackStat('session');
+  if(typeof sessionStart!=='undefined') sessionStart=Date.now();
+}
 async function enableAndStart(){
   const has=typeof DeviceMotionEvent!=='undefined';
   const needs=has && typeof DeviceMotionEvent.requestPermission==='function';
   if(needs){ try{ const r=await DeviceMotionEvent.requestPermission(); if(r==='granted'){ window.addEventListener('devicemotion',onMotion); motionReady=true; } }catch(e){} }
   else if(has){ window.addEventListener('devicemotion',onMotion); motionReady=true; }
   startGame();
-  if(!motionReady) cueText.textContent='Tap the screen for the next one';
+  if(!motionReady){
+    cueText.textContent='Tap the screen for the next one';
+    jokeCueText.textContent='Tap the screen for the next one';
+  }
 }
 document.getElementById('start').addEventListener('click',enableAndStart);
 stage.addEventListener('click',nextQuestion);
+jokeStage.addEventListener('click',nextJoke);
 
 /* instructions panel */
 const instructions=document.getElementById('instructions');
@@ -632,6 +1262,7 @@ function openAbout(e){ if(e) e.stopPropagation(); about.classList.remove('hidden
 function closeAbout(e){ if(e) e.stopPropagation(); about.classList.add('hidden'); }
 document.getElementById('aboutOpen').addEventListener('click',openAbout);
 document.getElementById('infoBtn').addEventListener('click',openAbout);
+document.getElementById('jokeInfoBtn').addEventListener('click',openAbout);
 document.getElementById('aboutClose').addEventListener('click',closeAbout);
 about.addEventListener('click',(e)=>{ if(e.target===about) closeAbout(e); });
 
