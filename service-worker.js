@@ -1,5 +1,5 @@
 /* Bump CACHE version whenever you change the app so phones pick up the update. */
-const CACHE = 'henrys-icebreakers-v2';
+const CACHE = 'henrys-icebreakers-v3';
 const ASSETS = [
   './',
   './index.html',
